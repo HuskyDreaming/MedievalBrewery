@@ -49,12 +49,4 @@ public class Hologram {
 
         return armorStand;
     }
-
-    public ArmorStand getHeader() {
-        return header;
-    }
-
-    public ArmorStand getFooter() {
-        return footer;
-    }
 }

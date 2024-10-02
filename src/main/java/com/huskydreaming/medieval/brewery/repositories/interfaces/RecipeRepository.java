@@ -1,13 +1,11 @@
-package com.huskydreaming.medieval.brewery.handlers.interfaces;
+package com.huskydreaming.medieval.brewery.repositories.interfaces;
 
 import com.huskydreaming.medieval.brewery.data.Recipe;
-import com.huskydreaming.medieval.brewery.handlers.Handler;
+import com.huskydreaming.medieval.brewery.repositories.Repository;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Map;
-
-public interface RecipeHandler extends Handler {
+public interface RecipeRepository extends Repository {
 
     String getName(Recipe recipe);
 
@@ -16,6 +14,4 @@ public interface RecipeHandler extends Handler {
     Recipe getRecipe(Inventory inventory);
 
     ItemStack getRecipeItem(String recipeName);
-
-    Map<String, Recipe> getRecipes();
 }

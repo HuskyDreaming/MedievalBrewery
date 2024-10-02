@@ -9,12 +9,13 @@ import java.util.UUID;
 public class Brewery {
 
     private Position position;
-    private transient Hologram hologram;
     private BreweryStatus status;
     private String recipeName;
     private long timeStamp;
     private UUID uuid;
     private int remaining;
+
+    private transient Hologram hologram;
 
     public Position getPosition() {
         return position;
@@ -22,14 +23,6 @@ public class Brewery {
 
     public void setPosition(Position position) {
         this.position = position;
-    }
-
-    public Hologram getHologram() {
-        return hologram;
-    }
-
-    public void setHologram(Hologram hologram) {
-        this.hologram = hologram;
     }
 
     public BreweryStatus getStatus() {
@@ -72,16 +65,29 @@ public class Brewery {
         this.remaining = remaining;
     }
 
+    public Hologram getHologram() {
+        return hologram;
+    }
+
+    public void setHologram(Hologram hologram) {
+        this.hologram = hologram;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Brewery brewery = (Brewery) o;
-        return timeStamp == brewery.timeStamp && remaining == brewery.remaining && Objects.equals(position, brewery.position) && Objects.equals(hologram, brewery.hologram) && status == brewery.status && Objects.equals(recipeName, brewery.recipeName) && Objects.equals(uuid, brewery.uuid);
+        return timeStamp == brewery.timeStamp &&
+                remaining == brewery.remaining &&
+                status == brewery.status &&
+                Objects.equals(position, brewery.position) &&
+                Objects.equals(recipeName, brewery.recipeName) &&
+                Objects.equals(uuid, brewery.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position, hologram, status, recipeName, timeStamp, uuid, remaining);
+        return Objects.hash(position, status, recipeName, timeStamp, uuid, remaining);
     }
 }

@@ -72,7 +72,12 @@ public class Recipe {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Recipe recipe = (Recipe) o;
-        return data == recipe.data && seconds == recipe.seconds && uses == recipe.uses && Objects.equals(ingredients, recipe.ingredients) && Objects.equals(effects, recipe.effects) && color == recipe.color;
+        return data == recipe.data &&
+                seconds == recipe.seconds &&
+                uses == recipe.uses &&
+                color == recipe.color &&
+                Objects.equals(ingredients, recipe.ingredients) &&
+                Objects.equals(effects, recipe.effects);
     }
 
     @Override

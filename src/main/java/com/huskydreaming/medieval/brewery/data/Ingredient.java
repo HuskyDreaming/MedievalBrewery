@@ -20,10 +20,6 @@ public class Ingredient {
         this.amount = itemStack.getAmount();
     }
 
-    public Material toMaterial() {
-        return Material.getMaterial(material);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

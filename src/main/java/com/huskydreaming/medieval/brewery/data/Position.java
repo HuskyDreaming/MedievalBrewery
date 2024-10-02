@@ -32,7 +32,10 @@ public class Position {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Position position = (Position) o;
-        return x == position.x && y == position.y && z == position.z && Objects.equals(worldUID, position.worldUID);
+        return x == position.x &&
+                y == position.y &&
+                z == position.z &&
+                Objects.equals(worldUID, position.worldUID);
     }
 
     @Override
