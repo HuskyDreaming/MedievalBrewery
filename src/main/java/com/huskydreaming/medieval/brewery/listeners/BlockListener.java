@@ -5,6 +5,7 @@ import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.data.Recipe;
 import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import com.huskydreaming.medieval.brewery.utils.TextUtils;
@@ -23,12 +24,14 @@ import org.bukkit.inventory.ItemStack;
 
 public class BlockListener implements Listener {
 
+    private final DependencyHandler dependencyHandler;
     private final BreweryRepository breweryRepository;
     private final RecipeRepository recipeRepository;
 
     public BlockListener(MedievalBreweryPlugin plugin) {
         this.breweryRepository = plugin.getBreweryRepository();
         this.recipeRepository = plugin.getRecipeRepository();
+        this.dependencyHandler = plugin.getDependencyHandler();
     }
 
     @EventHandler
@@ -41,6 +44,11 @@ public class BlockListener implements Listener {
             if(breweryRepository.isBrewery(blockAgainst)) {
                 player.sendMessage(TextUtils.prefix("The barrel is already a brewery."));
                 event.setCancelled(true);
+                return;
+            }
+
+            if(!(dependencyHandler.isWorldGuard() && dependencyHandler.isBlockInsideRegion(blockPlaced))) {
+                player.sendMessage(TextUtils.prefix("You are not able to create a brewery inside a protected region."));
                 return;
             }
 

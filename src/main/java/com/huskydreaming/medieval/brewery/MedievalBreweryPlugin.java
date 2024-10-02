@@ -1,7 +1,9 @@
 package com.huskydreaming.medieval.brewery;
 
 import com.huskydreaming.medieval.brewery.handlers.implementations.BreweryHandlerImpl;
+import com.huskydreaming.medieval.brewery.handlers.implementations.DependencyHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.BreweryHandler;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.huskydreaming.medieval.brewery.listeners.BlockListener;
 import com.huskydreaming.medieval.brewery.listeners.EntityListener;
 import com.huskydreaming.medieval.brewery.listeners.InventoryListener;
@@ -21,6 +23,7 @@ public class MedievalBreweryPlugin extends JavaPlugin {
     private RecipeRepository recipeRepository;
 
     private BreweryHandler breweryHandler;
+    private DependencyHandler dependencyHandler;
 
     @Override
     public void onEnable() {
@@ -35,6 +38,9 @@ public class MedievalBreweryPlugin extends JavaPlugin {
         breweryHandler = new BreweryHandlerImpl(this);
         breweryHandler.initialize(this);
         breweryHandler.run(this);
+
+        dependencyHandler = new DependencyHandlerImpl();
+        dependencyHandler.initialize(this);
 
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new BlockListener(this), this);
@@ -58,5 +64,9 @@ public class MedievalBreweryPlugin extends JavaPlugin {
 
     public RecipeRepository getRecipeRepository() {
         return recipeRepository;
+    }
+
+    public DependencyHandler getDependencyHandler() {
+        return dependencyHandler;
     }
 }

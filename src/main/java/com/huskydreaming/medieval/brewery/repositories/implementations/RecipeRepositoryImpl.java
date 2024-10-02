@@ -104,12 +104,11 @@ public class RecipeRepositoryImpl implements RecipeRepository {
         PotionMeta potionMeta = (PotionMeta) itemStack.getItemMeta();
         if (potionMeta != null) {
             potionMeta.setDisplayName(recipeName);
-            potionMeta.setColor(Color.RED);
             potionMeta.setCustomModelData(recipe.getData());
             for (String potionEffectTypeString : recipe.getEffects()) {
                 PotionEffectType potionEffectType = PotionEffectType.getByName(potionEffectTypeString);
                 if (potionEffectType == null) continue;
-                potionMeta.addCustomEffect(new PotionEffect(potionEffectType, 600, 1), false);
+                potionMeta.addCustomEffect(new PotionEffect(potionEffectType, 600, 0), false);
             }
             itemStack.setItemMeta(potionMeta);
         }
