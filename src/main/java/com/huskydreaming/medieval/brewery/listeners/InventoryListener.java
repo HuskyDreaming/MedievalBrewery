@@ -50,6 +50,8 @@ public class InventoryListener implements Listener {
         brewery.setRemaining(recipe.getUses());
         brewery.setStatus(BreweryStatus.BREWING);
 
+        inventory.clear();
+
         long systemTime = System.currentTimeMillis() + (recipe.getSeconds() * 1000L);
         brewery.setTimeStamp(systemTime);
     }

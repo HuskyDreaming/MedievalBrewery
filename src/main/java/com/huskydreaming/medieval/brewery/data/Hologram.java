@@ -10,8 +10,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class Hologram {
 
-    private transient final ArmorStand header;
-    private transient final ArmorStand footer;
+    private final ArmorStand header;
+    private final ArmorStand footer;
 
     public Hologram(NamespacedKey namespacedKey, Block block) {
         Location location = block.getLocation();

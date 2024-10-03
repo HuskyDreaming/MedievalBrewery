@@ -18,26 +18,30 @@ import java.util.Set;
 
 public class BreweryRepositoryImpl implements BreweryRepository {
 
-    private NamespacedKey namespacedKey;
     private Set<Brewery> breweries = new HashSet<>();
 
     @Override
     public void deserialize(MedievalBreweryPlugin plugin) {
         Type type = new TypeToken<Set<Brewery>>() {}.getType();
-        namespacedKey = plugin.getNamespacedKey();
         breweries = Json.read(plugin, "breweries", type);
-        if (breweries == null) breweries = new HashSet<>();
+        if (breweries == null) {
+            breweries = new HashSet<>();
+        } else {
+            plugin.getLogger().info("Successfully loaded " + breweries.size());
+        }
     }
 
     @Override
     public void serialize(MedievalBreweryPlugin plugin) {
         Json.write(plugin, "breweries", breweries);
+        plugin.getLogger().info("Successfully saved " + breweries.size());
     }
 
     @Override
     public void addBrewery(Player player, Block block) {
         Brewery brewery = new Brewery();
         Position position = new Position(block);
+        NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
         Hologram hologram = new Hologram(namespacedKey, block);
         brewery.setHologram(hologram);
         brewery.setPosition(position);

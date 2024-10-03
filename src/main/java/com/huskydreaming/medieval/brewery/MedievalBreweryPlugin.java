@@ -7,6 +7,7 @@ import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.huskydreaming.medieval.brewery.listeners.BlockListener;
 import com.huskydreaming.medieval.brewery.listeners.EntityListener;
 import com.huskydreaming.medieval.brewery.listeners.InventoryListener;
+import com.huskydreaming.medieval.brewery.listeners.PlayerListener;
 import com.huskydreaming.medieval.brewery.repositories.implementations.BreweryRepositoryImpl;
 import com.huskydreaming.medieval.brewery.repositories.implementations.RecipeRepositoryImpl;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
@@ -17,7 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class MedievalBreweryPlugin extends JavaPlugin {
 
-    private NamespacedKey namespacedKey;
+    private static NamespacedKey namespacedKey;
 
     private BreweryRepository breweryRepository;
     private RecipeRepository recipeRepository;
@@ -44,8 +45,9 @@ public class MedievalBreweryPlugin extends JavaPlugin {
 
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new BlockListener(this), this);
-        pluginManager.registerEvents(new EntityListener(this), this);
+        pluginManager.registerEvents(new EntityListener(), this);
         pluginManager.registerEvents(new InventoryListener(this), this);
+        pluginManager.registerEvents(new PlayerListener(this), this);
     }
 
     @Override
@@ -54,7 +56,7 @@ public class MedievalBreweryPlugin extends JavaPlugin {
         breweryRepository.serialize(this);
     }
 
-    public NamespacedKey getNamespacedKey() {
+    public static NamespacedKey getNamespacedKey() {
         return namespacedKey;
     }
 

@@ -12,12 +12,6 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class EntityListener implements Listener {
 
-    private final MedievalBreweryPlugin plugin;
-
-    public EntityListener(MedievalBreweryPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         if (event.getDamager().getType() != EntityType.PLAYER) return;
@@ -25,7 +19,7 @@ public class EntityListener implements Listener {
         Entity entity = event.getEntity();
         if (entity.getType() != EntityType.ARMOR_STAND) return;
 
-        NamespacedKey namespacedKey = plugin.getNamespacedKey();
+        NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
         PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
         if (persistentDataContainer.has(namespacedKey, PersistentDataType.STRING)) {
             event.setCancelled(true);

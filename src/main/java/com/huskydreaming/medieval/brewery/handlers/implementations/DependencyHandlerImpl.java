@@ -18,7 +18,7 @@ public class DependencyHandlerImpl implements DependencyHandler {
     @Override
     public void initialize(MedievalBreweryPlugin plugin) {
         PluginManager pluginManager = plugin.getServer().getPluginManager();
-        if(pluginManager.getPlugin("WorldGuard") != null) {
+        if (pluginManager.getPlugin("WorldGuard") != null) {
             worldGuard = true;
         }
     }

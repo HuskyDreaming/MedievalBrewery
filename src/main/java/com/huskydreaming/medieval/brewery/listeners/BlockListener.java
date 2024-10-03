@@ -47,7 +47,7 @@ public class BlockListener implements Listener {
                 return;
             }
 
-            if(!(dependencyHandler.isWorldGuard() && dependencyHandler.isBlockInsideRegion(blockPlaced))) {
+            if(dependencyHandler.isWorldGuard() && dependencyHandler.isBlockInsideRegion(blockPlaced)) {
                 player.sendMessage(TextUtils.prefix("You are not able to create a brewery inside a protected region."));
                 return;
             }
@@ -122,23 +122,23 @@ public class BlockListener implements Listener {
             Brewery brewery = breweryRepository.getBrewery(relativeBlock);
             if(brewery.getStatus() == BreweryStatus.READY) {
                 Hologram hologram = brewery.getHologram();
+                String recipeName = brewery.getRecipeName();
                 int remaining = brewery.getRemaining();
 
                 if(remaining <= 1) {
                     hologram.update("#8db1b5Brewery", "#dbd8adOpen barrel to begin!");
                     brewery.setStatus(BreweryStatus.IDLE);
                 } else {
-                    String recipeName = brewery.getRecipeName();
                     Recipe recipe = recipeRepository.getRecipe(recipeName);
                     int uses = recipe.getUses();
-                    remaining -= 1;
-                    brewery.setRemaining(remaining);
-                    itemStack.setAmount(itemStack.getAmount() -1);
-                    ItemStack recipeItem = recipeRepository.getRecipeItem(brewery.getRecipeName());
-                    Player player = event.getPlayer();
-                    player.getInventory().addItem(recipeItem);
+                    brewery.setRemaining(remaining -=1);
                     hologram.update(recipe.getColor() + recipeName, "#dbd8adReady to Collect! " + remaining + "/" + uses);
                 }
+
+                itemStack.setAmount(itemStack.getAmount() -1);
+                ItemStack recipeItem = recipeRepository.getRecipeItem(recipeName);
+                Player player = event.getPlayer();
+                player.getInventory().addItem(recipeItem);
             }
         }
     }
