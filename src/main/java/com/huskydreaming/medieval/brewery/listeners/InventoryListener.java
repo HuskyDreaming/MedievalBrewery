@@ -6,7 +6,7 @@ import com.huskydreaming.medieval.brewery.data.Recipe;
 import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.medieval.brewery.storage.Message;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -40,7 +40,7 @@ public class InventoryListener implements Listener {
         Player player = (Player) event.getPlayer();
         Recipe recipe = recipeRepository.getRecipe(inventory);
         if(recipe == null) {
-            player.sendMessage(TextUtils.prefix("You must provide a valid recipe..."));
+            player.sendMessage(Message.GENERAL_RECIPE.prefix());
             return;
         }
 

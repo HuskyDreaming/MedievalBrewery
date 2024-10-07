@@ -8,8 +8,11 @@ import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.medieval.brewery.storage.Message;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.TripwireHook;
@@ -21,14 +24,21 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+
+import java.util.Set;
 
 public class BlockListener implements Listener {
 
-    private final DependencyHandler dependencyHandler;
+    private final Plugin plugin;
+
     private final BreweryRepository breweryRepository;
     private final RecipeRepository recipeRepository;
 
+    private final DependencyHandler dependencyHandler;
+
     public BlockListener(MedievalBreweryPlugin plugin) {
+        this.plugin = plugin;
         this.breweryRepository = plugin.getBreweryRepository();
         this.recipeRepository = plugin.getRecipeRepository();
         this.dependencyHandler = plugin.getDependencyHandler();
@@ -42,23 +52,25 @@ public class BlockListener implements Listener {
         if (blockPlaced.getType() == Material.TRIPWIRE_HOOK && blockAgainst.getType() == Material.BARREL) {
             Player player = event.getPlayer();
             if(breweryRepository.isBrewery(blockAgainst)) {
-                player.sendMessage(TextUtils.prefix("The barrel is already a brewery."));
+                player.sendMessage(Message.GENERAL_BARREL.prefix());
                 event.setCancelled(true);
                 return;
             }
 
             if(dependencyHandler.isWorldGuard() && dependencyHandler.isBlockInsideRegion(blockPlaced)) {
-                player.sendMessage(TextUtils.prefix("You are not able to create a brewery inside a protected region."));
+                player.sendMessage(Message.GENERAL_WORLD_GUARD_PROTECTED.prefix());
                 return;
             }
 
-            if(breweryRepository.isOwner(player)) {
-                player.sendMessage(TextUtils.prefix("You can only have one brewery at a time."));
+            Set<Brewery> breweries = breweryRepository.getBreweries(player);
+            int limit = plugin.getConfig().getInt("brewery-limit");
+            if(breweries.size() >= limit) {
+                player.sendMessage(Message.GENERAL_LIMIT.prefix(limit));
                 event.setCancelled(true);
                 return;
             }
             breweryRepository.addBrewery(player, blockAgainst);
-            player.sendMessage(TextUtils.prefix("You have created a brewery."));
+            player.sendMessage(Message.GENERAL_CREATE.prefix());
         }
     }
 
@@ -74,12 +86,20 @@ public class BlockListener implements Listener {
             Block relativeBlock = block.getRelative(blockFace);
 
             if(relativeBlock.getType() == Material.BARREL && breweryRepository.isBrewery(relativeBlock)) {
+                Player player = event.getPlayer();
                 Brewery brewery = breweryRepository.getBrewery(relativeBlock);
+
+                if(!brewery.getOwner().equals(player.getUniqueId())) {
+                    player.sendMessage(Message.GENERAL_OWNER.prefix());
+                    event.setCancelled(true);
+                    return;
+                }
+
                 Hologram hologram = brewery.getHologram();
-                hologram.delete();
+                if(hologram != null) hologram.delete();
 
                 breweryRepository.removeBrewery(relativeBlock);
-                event.getPlayer().sendMessage(TextUtils.prefix("You have removed the brewery."));
+                player.sendMessage(Message.GENERAL_REMOVE.prefix());
             }
         }
     }
@@ -98,7 +118,7 @@ public class BlockListener implements Listener {
             Brewery brewery = breweryRepository.getBrewery(block);
 
             if(brewery.getStatus() == BreweryStatus.BREWING) {
-                player.sendMessage(TextUtils.prefix("There is already a brew in progress."));
+                player.sendMessage(Message.GENERAL_IN_PROGRESS.prefix());
                 event.setCancelled(true);
                 return;
             } else if(brewery.getStatus() == BreweryStatus.READY) {
@@ -126,19 +146,27 @@ public class BlockListener implements Listener {
                 int remaining = brewery.getRemaining();
 
                 if(remaining <= 1) {
-                    hologram.update("#8db1b5Brewery", "#dbd8adOpen barrel to begin!");
+                    hologram.update(Message.TITLE_IDLE_HEADER.parse(), Message.TITLE_IDLE_FOOTER.parse());
                     brewery.setStatus(BreweryStatus.IDLE);
                 } else {
                     Recipe recipe = recipeRepository.getRecipe(recipeName);
                     int uses = recipe.getUses();
                     brewery.setRemaining(remaining -=1);
-                    hologram.update(recipe.getColor() + recipeName, "#dbd8adReady to Collect! " + remaining + "/" + uses);
+                    String header = Message.TITLE_READY_HEADER.parameterize(recipe.getItemColor(), recipeName);
+                    String footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
+                    hologram.update(header, footer);
                 }
 
                 itemStack.setAmount(itemStack.getAmount() -1);
                 ItemStack recipeItem = recipeRepository.getRecipeItem(recipeName);
                 Player player = event.getPlayer();
                 player.getInventory().addItem(recipeItem);
+
+                Location location = block.getLocation();
+                World world = location.getWorld();
+                if(world != null) {
+                    world.playSound(block.getLocation(), Sound.ENTITY_WANDERING_TRADER_DRINK_MILK, 1, 1);
+                }
             }
         }
     }

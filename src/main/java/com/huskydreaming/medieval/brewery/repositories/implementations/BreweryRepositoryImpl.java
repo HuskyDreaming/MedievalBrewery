@@ -6,7 +6,7 @@ import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.data.Position;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
-import com.huskydreaming.medieval.brewery.utils.Json;
+import com.huskydreaming.medieval.brewery.storage.Json;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -15,6 +15,7 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BreweryRepositoryImpl implements BreweryRepository {
 
@@ -23,56 +24,54 @@ public class BreweryRepositoryImpl implements BreweryRepository {
     @Override
     public void deserialize(MedievalBreweryPlugin plugin) {
         Type type = new TypeToken<Set<Brewery>>() {}.getType();
-        breweries = Json.read(plugin, "breweries", type);
+        breweries = Json.read(plugin, "data/breweries", type);
         if (breweries == null) {
             breweries = new HashSet<>();
         } else {
-            plugin.getLogger().info("Successfully loaded " + breweries.size());
+            plugin.getLogger().info("Successfully loaded " + breweries.size() + " breweries");
         }
     }
 
     @Override
     public void serialize(MedievalBreweryPlugin plugin) {
-        Json.write(plugin, "breweries", breweries);
-        plugin.getLogger().info("Successfully saved " + breweries.size());
+        Json.write(plugin, "data/breweries", breweries);
+        breweries.clear();
+        plugin.getLogger().info("Successfully saved " + breweries.size() + " breweries");
     }
 
     @Override
     public void addBrewery(Player player, Block block) {
         Brewery brewery = new Brewery();
-        Position position = new Position(block);
         NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
-        Hologram hologram = new Hologram(namespacedKey, block);
+        Hologram hologram = Hologram.create(namespacedKey, block);
         brewery.setHologram(hologram);
-        brewery.setPosition(position);
+        brewery.setPosition(Position.of(block));
         brewery.setOwner(player);
         breweries.add(brewery);
     }
 
     @Override
     public void removeBrewery(Block block) {
-        Position position = new Position(block);
-        breweries.removeIf(b -> b.getPosition().equals(position));
+        breweries.removeIf(b -> b.getPosition().equals(Position.of(block)));
     }
 
     @Override
     public boolean isBrewery(Block block) {
-        Position position = new Position(block);
-        return breweries.stream().anyMatch(b -> b.getPosition().equals(position));
+        return breweries.stream().anyMatch(b -> b.getPosition().equals(Position.of(block)));
     }
-
-    @Override
-    public boolean isOwner(Player player) {
-        return breweries.stream().anyMatch(b -> b.getOwner().equals(player.getUniqueId()));
-    }
-
     @Override
     public Brewery getBrewery(Block block) {
-        Position position = new Position(block);
         return breweries.stream()
-                .filter(b -> b.getPosition().equals(position))
+                .filter(b -> b.getPosition().equals(Position.of(block)))
                 .findFirst()
                 .orElse(null);
+    }
+
+    @Override
+    public Set<Brewery> getBreweries(Player player) {
+        return this.breweries.stream()
+                .filter(b -> b.getOwner().equals(player.getUniqueId()))
+                .collect(Collectors.toSet());
     }
 
     @Override

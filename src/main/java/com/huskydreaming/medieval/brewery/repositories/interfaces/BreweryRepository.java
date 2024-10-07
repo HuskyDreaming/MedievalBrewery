@@ -15,9 +15,9 @@ public interface BreweryRepository extends Repository {
 
     boolean isBrewery(Block block);
 
-    boolean isOwner(Player player);
-
     Brewery getBrewery(Block block);
+
+    Set<Brewery> getBreweries(Player player);
 
     Set<Brewery> getBreweries();
 }

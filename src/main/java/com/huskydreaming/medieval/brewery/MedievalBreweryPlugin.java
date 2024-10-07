@@ -1,9 +1,12 @@
 package com.huskydreaming.medieval.brewery;
 
+import com.huskydreaming.medieval.brewery.commands.BreweryCommand;
 import com.huskydreaming.medieval.brewery.handlers.implementations.BreweryHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.implementations.DependencyHandlerImpl;
+import com.huskydreaming.medieval.brewery.handlers.implementations.LocalizationHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.BreweryHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.LocalizationHandler;
 import com.huskydreaming.medieval.brewery.listeners.BlockListener;
 import com.huskydreaming.medieval.brewery.listeners.EntityListener;
 import com.huskydreaming.medieval.brewery.listeners.InventoryListener;
@@ -13,6 +16,7 @@ import com.huskydreaming.medieval.brewery.repositories.implementations.RecipeRep
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,9 +29,15 @@ public class MedievalBreweryPlugin extends JavaPlugin {
 
     private BreweryHandler breweryHandler;
     private DependencyHandler dependencyHandler;
+    private LocalizationHandler localizationHandler;
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
+
+        localizationHandler = new LocalizationHandlerImpl();
+        localizationHandler.initialize(this);
+
         namespacedKey = new NamespacedKey(this, "MedievalBrewery");
 
         recipeRepository = new RecipeRepositoryImpl();
@@ -48,6 +58,9 @@ public class MedievalBreweryPlugin extends JavaPlugin {
         pluginManager.registerEvents(new EntityListener(), this);
         pluginManager.registerEvents(new InventoryListener(this), this);
         pluginManager.registerEvents(new PlayerListener(this), this);
+
+        PluginCommand pluginCommand = getCommand("brewery");
+        if(pluginCommand != null) pluginCommand.setExecutor(new BreweryCommand(this));
     }
 
     @Override
@@ -70,5 +83,9 @@ public class MedievalBreweryPlugin extends JavaPlugin {
 
     public DependencyHandler getDependencyHandler() {
         return dependencyHandler;
+    }
+
+    public LocalizationHandler getLocalizationHandler() {
+        return localizationHandler;
     }
 }

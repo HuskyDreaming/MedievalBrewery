@@ -1,4 +1,4 @@
-package com.huskydreaming.medieval.brewery.utils;
+package com.huskydreaming.medieval.brewery.storage;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

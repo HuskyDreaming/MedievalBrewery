@@ -1,5 +1,6 @@
 package com.huskydreaming.medieval.brewery.data;
 
+import com.huskydreaming.medieval.brewery.storage.Message;
 import com.huskydreaming.medieval.brewery.utils.TextUtils;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -13,13 +14,21 @@ public class Hologram {
     private final ArmorStand header;
     private final ArmorStand footer;
 
-    public Hologram(NamespacedKey namespacedKey, Block block) {
+    public static Hologram create(NamespacedKey namespacedKey, Block block, String header, String footer) {
+        return new Hologram(namespacedKey, block, header, footer);
+    }
+
+    public static Hologram create(NamespacedKey namespacedKey, Block block) {
+        return new Hologram(namespacedKey, block, Message.TITLE_IDLE_HEADER.parse(), Message.TITLE_IDLE_FOOTER.parse());
+    }
+
+    public Hologram(NamespacedKey namespacedKey, Block block, String header, String footer) {
         Location location = block.getLocation();
         location.add(0.5, 0, 0.5);
         location.subtract(0, 0.5, 0);
 
-        header = create(namespacedKey, location, "#8db1b5Brewery");
-        footer = create(namespacedKey, location.subtract(0, 0.25, 0), "#dbd8adOpen barrel to begin!");
+        this.header = create(namespacedKey, location, header);
+        this.footer = create(namespacedKey, location.subtract(0, 0.25, 0), footer);
     }
 
     public void update(String header, String footer) {

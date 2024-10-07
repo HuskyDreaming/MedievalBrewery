@@ -2,24 +2,25 @@ package com.huskydreaming.medieval.brewery.data;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
 
 public class Recipe {
 
     private final Set<Ingredient> ingredients;
-    private final Set<String> potionEffects;
+    private final Set<Effect> effects;
+
     private Material material;
     private ChatColor itemColor;
     private Color potionColor;
+
     private int data;
     private int seconds;
     private int uses;
 
     public Recipe() {
         ingredients = new HashSet<>();
-        potionEffects = new HashSet<>();
+        effects = new HashSet<>();
     }
 
     public void addIngredient(Ingredient ingredient) {
@@ -31,12 +32,12 @@ public class Recipe {
     }
 
 
-    public void addEffect(PotionEffectType effect) {
-        potionEffects.add(effect.getKey().getKey());
+    public void addEffect(Effect effect) {
+        effects.add(effect);
     }
 
-    public Set<String> getEffects() {
-        return Collections.unmodifiableSet(potionEffects);
+    public Set<Effect> getEffects() {
+        return Collections.unmodifiableSet(effects);
     }
 
     public Material getMaterial() {
@@ -97,13 +98,13 @@ public class Recipe {
                 uses == recipe.uses &&
                 material == recipe.material &&
                 itemColor == recipe.itemColor &&
+                Objects.equals(potionColor, recipe.potionColor) &&
                 Objects.equals(ingredients, recipe.ingredients) &&
-                Objects.equals(potionEffects, recipe.potionEffects) &&
-                Objects.equals(potionColor, recipe.potionColor);
+                Objects.equals(effects, recipe.effects);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ingredients, potionEffects, material, itemColor, potionColor, data, seconds, uses);
+        return Objects.hash(ingredients, effects, material, itemColor, potionColor, data, seconds, uses);
     }
 }

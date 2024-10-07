@@ -14,6 +14,10 @@ public class Position {
     private final int z;
     private final UUID worldUID;
 
+    public static Position of(Block block) {
+        return new Position(block);
+    }
+
     public Position(Block block) {
         x = block.getX();
         y = block.getY();

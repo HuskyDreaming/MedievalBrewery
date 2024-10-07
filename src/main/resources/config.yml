@@ -1,0 +1,8 @@
+# Which language file to use
+language: en_us
+
+# How many breweries per player
+brewery-limit: 3
+
+# notify player when their brew has finished
+notify-player: false

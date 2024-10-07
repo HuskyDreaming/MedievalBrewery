@@ -1,10 +1,24 @@
 main: com.huskydreaming.medieval.brewery.MedievalBreweryPlugin
 name: MedievalBrewery
-api-version: '1.20'
+description: A medieval brewery plugin
+api-version: '1.21'
 version: 1.2
 author: HuskyDreaming
 load: POSTWORLD
+
 soft-depend:
   - Multiverse-Core
   - WorldGuard
-  - Oraxen
+
+commands:
+  brewery:
+    description: Brewery Command
+    aliases:
+      - brew
+    permission: brewery.admin
+    usage: /<command> [reload|remove]
+
+permissions:
+  brewery.admin:
+    description: Allows brewery command
+    default: op

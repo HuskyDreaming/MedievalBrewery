@@ -2,13 +2,22 @@ package com.huskydreaming.medieval.brewery.utils;
 
 import org.bukkit.ChatColor;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class TextUtils {
 
-    public static String prefix(String message) {
-        return hex("#8db1b5Brewery &8» #dbd8ad" + message);
+    private static final String regex = "\\s+";
+
+    public static String capitalize(String input) {
+        if (input == null) return null;
+        if (input.isEmpty()) return "";
+
+        return Arrays.stream(input.split(regex))
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
+                .collect(Collectors.joining(" "));
     }
 
     public static String hex(String message) {

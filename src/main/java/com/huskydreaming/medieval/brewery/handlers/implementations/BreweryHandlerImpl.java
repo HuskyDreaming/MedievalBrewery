@@ -8,9 +8,12 @@ import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.data.Recipe;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.BreweryHandler;
+import com.huskydreaming.medieval.brewery.storage.Message;
 import com.huskydreaming.medieval.brewery.utils.TimeUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BreweryHandlerImpl implements BreweryHandler {
@@ -30,25 +33,34 @@ public class BreweryHandlerImpl implements BreweryHandler {
             Block block = brewery.getPosition().toBlock();
             if (block == null) continue;
 
-            NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
-            Hologram hologram = new Hologram(namespacedKey, block);
-            brewery.setHologram(hologram);
-
             String recipeName = brewery.getRecipeName();
             Recipe recipe = recipeRepository.getRecipe(recipeName);
             if (recipe == null) continue;
 
+            String header = null;
+            String footer = null;
+
             switch (brewery.getStatus()) {
                 case READY -> {
-                    int uses = recipe.getUses();
                     int remaining = brewery.getRemaining();
-                    if (uses < remaining) {
-                        hologram.update(recipe.getItemColor() + recipeName, "#dbd8adReady to Collect! " + remaining + "/" + uses);
-                    } else {
-                        hologram.update(recipe.getItemColor() + recipeName, "#dbd8adReady to collect!");
-                    }
+                    int uses = recipe.getUses();
+
+                    header = Message.TITLE_READY_HEADER.parameterize(recipe.getItemColor(), recipeName);
+                    footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
                 }
-                case IDLE -> hologram.update("#8db1b5Brewery", "#dbd8adOpen barrel to begin!");
+                case IDLE -> {
+                    header = Message.TITLE_IDLE_HEADER.parse();
+                    footer = Message.TITLE_IDLE_FOOTER.parse();
+                }
+            }
+
+            NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
+            Hologram hologram;
+
+            if(header != null && footer != null) {
+                hologram = Hologram.create(namespacedKey, block, header, footer);
+            } else {
+                hologram = Hologram.create(namespacedKey, block);
             }
 
             brewery.setHologram(hologram);
@@ -85,14 +97,31 @@ public class BreweryHandlerImpl implements BreweryHandler {
                     long breweryTime = brewery.getTimeStamp();
                     long timeDifference = breweryTime - systemTime;
 
-                    String timeString = TimeUtil.convertTimeStamp(timeDifference);
-                    if(timeDifference <= 0) {
-                        hologram.update(recipe.getItemColor() + recipeName, "#dbd8adReady to collect!");
+                    String header;
+                    String footer;
+
+                    if(timeDifference <= 1) {
+                        int remaining = brewery.getRemaining();
+                        int uses = recipe.getUses();
+
+                        header = Message.TITLE_READY_HEADER.parameterize(recipe.getItemColor(), recipeName);
+                        footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
+
                         brewery.setStatus(BreweryStatus.READY);
                         brewery.setTimeStamp(0L);
+
+                        if(plugin.getConfig().getBoolean("notify-player")) {
+                            Player player = Bukkit.getPlayer(brewery.getOwner());
+                            if(player != null) player.sendMessage(Message.GENERAL_NOTIFY.prefix(recipe.getItemColor(), recipeName));
+                        }
                     } else {
-                        hologram.update(recipe.getItemColor() + recipeName, "#dbd8adFinishes in " + timeString);
+                        String timeString = TimeUtil.convertTimeStamp(timeDifference);
+
+                        header = Message.TITLE_TIME_HEADER.parameterize(recipe.getItemColor(), recipeName);
+                        footer = Message.TITLE_TIME_FOOTER.parameterize(timeString);
                     }
+
+                    hologram.update(header, footer);
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
