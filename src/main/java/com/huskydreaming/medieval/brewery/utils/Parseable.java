@@ -18,7 +18,7 @@ public interface Parseable {
             string = string.replace("<" + i + ">", TextUtils.capitalize(parameter.replace("_", " ")));
         }
 
-        return string;
+        return TextUtils.hex(string);
     }
 
     default List<String> parameterizeList(Object... objects) {
@@ -27,7 +27,7 @@ public interface Parseable {
             for (int i = 0; i < objects.length; i++) {
                 string = string.replace("<" + i + ">", String.valueOf(objects[i]));
             }
-            parameterList.add(string);
+            parameterList.add(TextUtils.hex(string));
         }
         return parameterList;
     }

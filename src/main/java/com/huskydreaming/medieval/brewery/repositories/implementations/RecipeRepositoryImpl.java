@@ -2,12 +2,12 @@ package com.huskydreaming.medieval.brewery.repositories.implementations;
 
 import com.google.common.reflect.TypeToken;
 import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
-import com.huskydreaming.medieval.brewery.data.Effect;
-import com.huskydreaming.medieval.brewery.data.Ingredient;
-import com.huskydreaming.medieval.brewery.data.Recipe;
+import com.huskydreaming.medieval.brewery.data.*;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
+import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import com.huskydreaming.medieval.brewery.storage.Json;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.medieval.brewery.storage.Message;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -23,6 +23,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,8 +31,14 @@ public class RecipeRepositoryImpl implements RecipeRepository {
 
     private Map<String, Recipe> recipes = new ConcurrentHashMap<>();
 
+    private QualityRepository qualityRepository;
+    private ConfigHandler configHandler;
+
     @Override
     public void deserialize(MedievalBreweryPlugin plugin) {
+        qualityRepository = plugin.getQualityRepository();
+        configHandler = plugin.getConfigHandler();
+
         Type type = new TypeToken<Map<String, Recipe>>() {}.getType();
         recipes = Json.read(plugin, "data/recipes", type);
         if (recipes == null) {
@@ -88,24 +95,45 @@ public class RecipeRepositoryImpl implements RecipeRepository {
     }
 
     @Override
-    public ItemStack getRecipeItem(String recipeName) {
+    public ItemStack getRecipeItem(Brewery brewery) {
+        String recipeName = brewery.getRecipeName();
         Recipe recipe = recipes.get(recipeName);
 
         if(recipe.getMaterial() == null) return null;
         ItemStack itemStack = new ItemStack(recipe.getMaterial());
+
+        Quality quality = null;
+        String qualityName = brewery.getQualityName();
+        boolean qualities = configHandler.hasQualities();
+        if(qualities) {
+            quality = qualityRepository.getQuality(qualityName);
+        }
 
         if(recipe.getMaterial() == Material.POTION) {
             PotionMeta potionMeta = (PotionMeta) itemStack.getItemMeta();
             if(potionMeta != null && recipe.getColor() != null) {
 
                 potionMeta.setColor(recipe.getColor());
-                potionMeta.setDisplayName(TextUtils.hex(recipe.getItemColor() + recipeName));
+                potionMeta.setDisplayName(Message.ITEM_NAME.parameterize(recipe.getItemColor(), recipeName));
                 potionMeta.setCustomModelData(recipe.getData());
                 potionMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 
+                String data;
+                List<String> lore;
+
+                if(qualities && quality != null) {
+                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(qualityName, recipe.getDescription());
+                    data = recipeName + ":" + quality.getMultiplier();
+                } else {
+                    lore = Message.ITEM_LORE_DEFAULT.parameterizeList(recipe.getDescription());
+                    data = recipeName;
+                }
+
+                potionMeta.setLore(lore);
+
                 NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
                 PersistentDataContainer persistentDataContainer = potionMeta.getPersistentDataContainer();
-                persistentDataContainer.set(namespacedKey, PersistentDataType.STRING, recipeName);
+                persistentDataContainer.set(namespacedKey, PersistentDataType.STRING, data);
 
                 itemStack.setItemMeta(potionMeta);
             }
@@ -113,13 +141,26 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             ItemMeta itemMeta = itemStack.getItemMeta();
             if(itemMeta != null) {
 
-                itemMeta.setDisplayName(TextUtils.hex(recipe.getItemColor() + recipeName));
+                itemMeta.setDisplayName(Message.ITEM_NAME.prefix(recipe.getItemColor(), recipeName));
                 itemMeta.setCustomModelData(recipe.getData());
                 itemMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 
+                String data;
+                List<String> lore;
+
+                if(qualities && quality != null) {
+                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(qualityName, recipe.getDescription());
+                    data = recipeName + ":" + quality.getMultiplier();
+                } else {
+                    lore = Message.ITEM_LORE_DEFAULT.parameterizeList(recipe.getDescription());
+                    data = recipeName;
+                }
+
+                itemMeta.setLore(lore);
+
                 NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
                 PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-                persistentDataContainer.set(namespacedKey, PersistentDataType.STRING, recipeName);
+                persistentDataContainer.set(namespacedKey, PersistentDataType.STRING, data);
 
                 itemStack.setItemMeta(itemMeta);
             }
@@ -129,6 +170,7 @@ public class RecipeRepositoryImpl implements RecipeRepository {
 
     private Recipe getBeerRecipe() {
         Recipe beerRecipe = new Recipe();
+        beerRecipe.setDescription("Perfect thirst quencher");
 
         Effect nauseaEffect = new Effect();
         nauseaEffect.setType(PotionEffectType.NAUSEA);
@@ -157,6 +199,7 @@ public class RecipeRepositoryImpl implements RecipeRepository {
 
     private Recipe getWineRecipe() {
         Recipe wineRecipe = new Recipe();
+        wineRecipe.setDescription("Wine and dine!");
 
         Effect nauseaEffect = new Effect();
         nauseaEffect.setType(PotionEffectType.NAUSEA);
@@ -184,6 +227,7 @@ public class RecipeRepositoryImpl implements RecipeRepository {
 
     private Recipe getSpiritsRecipe() {
         Recipe spiritsRecipe = new Recipe();
+        spiritsRecipe.setDescription("The good stuff");
 
         Effect nauseaEffect = new Effect();
         nauseaEffect.setType(PotionEffectType.NAUSEA);
