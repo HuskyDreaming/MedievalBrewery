@@ -2,9 +2,11 @@ package com.huskydreaming.medieval.brewery;
 
 import com.huskydreaming.medieval.brewery.commands.BreweryCommand;
 import com.huskydreaming.medieval.brewery.handlers.implementations.BreweryHandlerImpl;
+import com.huskydreaming.medieval.brewery.handlers.implementations.ConfigHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.implementations.DependencyHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.implementations.LocalizationHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.BreweryHandler;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.LocalizationHandler;
 import com.huskydreaming.medieval.brewery.listeners.BlockListener;
@@ -12,8 +14,10 @@ import com.huskydreaming.medieval.brewery.listeners.EntityListener;
 import com.huskydreaming.medieval.brewery.listeners.InventoryListener;
 import com.huskydreaming.medieval.brewery.listeners.PlayerListener;
 import com.huskydreaming.medieval.brewery.repositories.implementations.BreweryRepositoryImpl;
+import com.huskydreaming.medieval.brewery.repositories.implementations.QualityRepositoryImpl;
 import com.huskydreaming.medieval.brewery.repositories.implementations.RecipeRepositoryImpl;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
+import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.PluginCommand;
@@ -25,9 +29,11 @@ public class MedievalBreweryPlugin extends JavaPlugin {
     private static NamespacedKey namespacedKey;
 
     private BreweryRepository breweryRepository;
+    private QualityRepository qualityRepository;
     private RecipeRepository recipeRepository;
 
     private BreweryHandler breweryHandler;
+    private ConfigHandler configHandler;
     private DependencyHandler dependencyHandler;
     private LocalizationHandler localizationHandler;
 
@@ -35,10 +41,18 @@ public class MedievalBreweryPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
+        configHandler = new ConfigHandlerImpl();
+        configHandler.initialize(this);
+
         localizationHandler = new LocalizationHandlerImpl();
         localizationHandler.initialize(this);
 
         namespacedKey = new NamespacedKey(this, "MedievalBrewery");
+
+        if(configHandler.hasQualities()) {
+            qualityRepository = new QualityRepositoryImpl();
+            qualityRepository.deserialize(this);
+        }
 
         recipeRepository = new RecipeRepositoryImpl();
         recipeRepository.deserialize(this);
@@ -77,8 +91,16 @@ public class MedievalBreweryPlugin extends JavaPlugin {
         return breweryRepository;
     }
 
+    public QualityRepository getQualityRepository() {
+        return qualityRepository;
+    }
+
     public RecipeRepository getRecipeRepository() {
         return recipeRepository;
+    }
+
+    public ConfigHandler getConfigHandler() {
+        return configHandler;
     }
 
     public DependencyHandler getDependencyHandler() {

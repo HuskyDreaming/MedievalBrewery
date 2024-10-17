@@ -13,6 +13,7 @@ public class Recipe {
     private Material material;
     private ChatColor itemColor;
     private Color potionColor;
+    private String description;
 
     private int data;
     private int seconds;
@@ -58,6 +59,14 @@ public class Recipe {
 
     public ChatColor getItemColor() {
         return itemColor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setItemColor(ChatColor itemColor) {

@@ -11,6 +11,7 @@ public class Brewery {
     private Position position;
     private BreweryStatus status;
     private String recipeName;
+    private String qualityName;
     private long timeStamp;
     private UUID uuid;
     private int remaining;
@@ -39,6 +40,14 @@ public class Brewery {
 
     public void setRecipeName(String recipeName) {
         this.recipeName = recipeName;
+    }
+
+    public String getQualityName() {
+        return qualityName;
+    }
+
+    public void setQualityName(String qualityName) {
+        this.qualityName = qualityName;
     }
 
     public long getTimeStamp() {
@@ -83,11 +92,12 @@ public class Brewery {
                 status == brewery.status &&
                 Objects.equals(position, brewery.position) &&
                 Objects.equals(recipeName, brewery.recipeName) &&
+                Objects.equals(qualityName, brewery.qualityName) &&
                 Objects.equals(uuid, brewery.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position, status, recipeName, timeStamp, uuid, remaining);
+        return Objects.hash(position, status, recipeName, qualityName, timeStamp, uuid, remaining);
     }
 }

@@ -3,44 +3,32 @@ package com.huskydreaming.medieval.brewery.listeners;
 import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
 import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
-import com.huskydreaming.medieval.brewery.data.Recipe;
-import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
-import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import com.huskydreaming.medieval.brewery.storage.Message;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.TripwireHook;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.event.block.*;
 
 import java.util.Set;
 
 public class BlockListener implements Listener {
 
-    private final Plugin plugin;
-
     private final BreweryRepository breweryRepository;
-    private final RecipeRepository recipeRepository;
 
+    private final ConfigHandler configHandler;
     private final DependencyHandler dependencyHandler;
 
     public BlockListener(MedievalBreweryPlugin plugin) {
-        this.plugin = plugin;
         this.breweryRepository = plugin.getBreweryRepository();
-        this.recipeRepository = plugin.getRecipeRepository();
+
+        this.configHandler = plugin.getConfigHandler();
         this.dependencyHandler = plugin.getDependencyHandler();
     }
 
@@ -63,7 +51,7 @@ public class BlockListener implements Listener {
             }
 
             Set<Brewery> breweries = breweryRepository.getBreweries(player);
-            int limit = plugin.getConfig().getInt("brewery-limit");
+            int limit = configHandler.getLimit();
             if(breweries.size() >= limit) {
                 player.sendMessage(Message.GENERAL_LIMIT.prefix(limit));
                 event.setCancelled(true);
@@ -105,68 +93,27 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler
-    public void onClick(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+    public void onFromTo(BlockFromToEvent event) {
+        Block block = event.getToBlock();
 
-        Block block = event.getClickedBlock();
-        if (block == null) return;
+        if(block.getType() != Material.TRIPWIRE_HOOK) return;
 
-        if(block.getType() == Material.BARREL) {
-            if(!breweryRepository.isBrewery(block)) return;
+        TripwireHook tripwireHook = (TripwireHook) block.getState().getBlockData();
+        BlockFace blockFace = tripwireHook.getFacing().getOppositeFace();
 
-            Player player = event.getPlayer();
-            Brewery brewery = breweryRepository.getBrewery(block);
-
-            if(brewery.getStatus() == BreweryStatus.BREWING) {
-                player.sendMessage(Message.GENERAL_IN_PROGRESS.prefix());
-                event.setCancelled(true);
-                return;
-            } else if(brewery.getStatus() == BreweryStatus.READY) {
-                event.setCancelled(true);
-            }
-        }
-
-        if(block.getType() == Material.TRIPWIRE_HOOK) {
-
-            ItemStack itemStack = event.getItem();
-            if(itemStack == null || itemStack.getType() != Material.GLASS_BOTTLE) return;
-
-            TripwireHook tripwireHook = (TripwireHook) block.getState().getBlockData();
-            BlockFace blockFace = tripwireHook.getFacing().getOppositeFace();
-            Block relativeBlock = block.getRelative(blockFace);
-
-            if(!breweryRepository.isBrewery(relativeBlock)) return;
-
-            event.setCancelled(true);
-
+        Block relativeBlock = block.getRelative(blockFace);
+        if(relativeBlock.getType() == Material.BARREL && breweryRepository.isBrewery(relativeBlock)) {
             Brewery brewery = breweryRepository.getBrewery(relativeBlock);
-            if(brewery.getStatus() == BreweryStatus.READY) {
-                Hologram hologram = brewery.getHologram();
-                String recipeName = brewery.getRecipeName();
-                int remaining = brewery.getRemaining();
 
-                if(remaining <= 1) {
-                    hologram.update(Message.TITLE_IDLE_HEADER.parse(), Message.TITLE_IDLE_FOOTER.parse());
-                    brewery.setStatus(BreweryStatus.IDLE);
-                } else {
-                    Recipe recipe = recipeRepository.getRecipe(recipeName);
-                    int uses = recipe.getUses();
-                    brewery.setRemaining(remaining -=1);
-                    String header = Message.TITLE_READY_HEADER.parameterize(recipe.getItemColor(), recipeName);
-                    String footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
-                    hologram.update(header, footer);
-                }
+            Hologram hologram = brewery.getHologram();
+            if(hologram != null) hologram.delete();
 
-                itemStack.setAmount(itemStack.getAmount() -1);
-                ItemStack recipeItem = recipeRepository.getRecipeItem(recipeName);
-                Player player = event.getPlayer();
-                player.getInventory().addItem(recipeItem);
+            breweryRepository.removeBrewery(relativeBlock);
 
-                Location location = block.getLocation();
-                World world = location.getWorld();
-                if(world != null) {
-                    world.playSound(block.getLocation(), Sound.ENTITY_WANDERING_TRADER_DRINK_MILK, 1, 1);
-                }
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(brewery.getOwner());
+            if(offlinePlayer.hasPlayedBefore() && offlinePlayer.isOnline()) {
+                Player player = offlinePlayer.getPlayer();
+                if(player != null) player.sendMessage(Message.GENERAL_REMOVE_BLOCK.prefix());
             }
         }
     }

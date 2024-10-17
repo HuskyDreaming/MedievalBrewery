@@ -2,7 +2,9 @@ package com.huskydreaming.medieval.brewery.handlers.implementations;
 
 import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
 import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
+import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
@@ -19,12 +21,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class BreweryHandlerImpl implements BreweryHandler {
 
     private final BreweryRepository breweryRepository;
+    private final QualityRepository qualityRepository;
     private final RecipeRepository recipeRepository;
 
+    private final ConfigHandler configHandler;
 
     public BreweryHandlerImpl(MedievalBreweryPlugin plugin) {
         this.breweryRepository = plugin.getBreweryRepository();
+        this.qualityRepository = plugin.getQualityRepository();
         this.recipeRepository = plugin.getRecipeRepository();
+
+        this.configHandler = plugin.getConfigHandler();
     }
 
     @Override
@@ -110,7 +117,12 @@ public class BreweryHandlerImpl implements BreweryHandler {
                         brewery.setStatus(BreweryStatus.READY);
                         brewery.setTimeStamp(0L);
 
-                        if(plugin.getConfig().getBoolean("notify-player")) {
+                        if(configHandler.hasQualities()) {
+                            String quality = qualityRepository.getQuality();
+                            if (quality != null) brewery.setQualityName(quality);
+                        }
+
+                        if(configHandler.hasNotifyPlayer()) {
                             Player player = Bukkit.getPlayer(brewery.getOwner());
                             if(player != null) player.sendMessage(Message.GENERAL_NOTIFY.prefix(recipe.getItemColor(), recipeName));
                         }
