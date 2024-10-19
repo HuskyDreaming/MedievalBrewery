@@ -11,11 +11,11 @@ public class Recipe {
     private final Set<Effect> effects;
 
     private Material material;
-    private ChatColor itemColor;
+    private ChatColor chatColor;
     private Color potionColor;
     private String description;
 
-    private int data;
+    private int customModelData;
     private int seconds;
     private int uses;
 
@@ -49,16 +49,16 @@ public class Recipe {
         this.material = material;
     }
 
-    public Color getColor() {
+    public Color getPotionColor() {
         return potionColor;
     }
 
-    public void setColor(Color color) {
-        this.potionColor = color;
+    public void setPotionColor(Color potionColor) {
+        this.potionColor = potionColor;
     }
 
-    public ChatColor getItemColor() {
-        return itemColor;
+    public ChatColor getChatColor() {
+        return chatColor;
     }
 
     public String getDescription() {
@@ -69,16 +69,16 @@ public class Recipe {
         this.description = description;
     }
 
-    public void setItemColor(ChatColor itemColor) {
-        this.itemColor = itemColor;
+    public void setChatColor(ChatColor chatColor) {
+        this.chatColor = chatColor;
     }
 
-    public int getData() {
-        return data;
+    public int getCustomModelData() {
+        return customModelData;
     }
 
-    public void setData(int data) {
-        this.data = data;
+    public void setCustomModelData(int customModelData) {
+        this.customModelData = customModelData;
     }
 
     public int getSeconds() {
@@ -102,11 +102,11 @@ public class Recipe {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Recipe recipe = (Recipe) o;
-        return data == recipe.data &&
+        return customModelData == recipe.customModelData &&
                 seconds == recipe.seconds &&
                 uses == recipe.uses &&
                 material == recipe.material &&
-                itemColor == recipe.itemColor &&
+                chatColor == recipe.chatColor &&
                 Objects.equals(potionColor, recipe.potionColor) &&
                 Objects.equals(ingredients, recipe.ingredients) &&
                 Objects.equals(effects, recipe.effects);
@@ -114,6 +114,6 @@ public class Recipe {
 
     @Override
     public int hashCode() {
-        return Objects.hash(ingredients, effects, material, itemColor, potionColor, data, seconds, uses);
+        return Objects.hash(ingredients, effects, material, chatColor, potionColor, customModelData, seconds, uses);
     }
 }

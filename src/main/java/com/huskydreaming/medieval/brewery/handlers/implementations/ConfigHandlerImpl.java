@@ -9,14 +9,17 @@ public class ConfigHandlerImpl implements ConfigHandler {
     private int limit;
     private boolean qualities;
     private boolean notifyPlayer;
+    private String language;
 
     @Override
     public void initialize(MedievalBreweryPlugin plugin) {
+        plugin.saveDefaultConfig();
         FileConfiguration configuration = plugin.getConfig();
 
         limit = configuration.getInt("brewery-limit");
         qualities = configuration.getBoolean("qualities");
         notifyPlayer = configuration.getBoolean("notify-player");
+        language = configuration.getString("language");
     }
 
     @Override
@@ -32,5 +35,10 @@ public class ConfigHandlerImpl implements ConfigHandler {
     @Override
     public boolean hasNotifyPlayer() {
         return notifyPlayer;
+    }
+
+    @Override
+    public String getLanguage() {
+        return language;
     }
 }
