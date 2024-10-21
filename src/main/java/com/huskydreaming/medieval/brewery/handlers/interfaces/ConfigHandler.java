@@ -8,4 +8,6 @@ public interface ConfigHandler extends Handler {
     boolean hasQualities();
 
     boolean hasNotifyPlayer();
+
+    String getLanguage();
 }

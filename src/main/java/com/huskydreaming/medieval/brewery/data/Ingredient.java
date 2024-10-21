@@ -10,6 +10,10 @@ public class Ingredient {
     private final String material;
     private final int amount;
 
+    public static Ingredient create(Material material, int amount) {
+        return new Ingredient(material, amount);
+    }
+
     public Ingredient(Material material, int amount) {
         this.material = material.name();
         this.amount = amount;

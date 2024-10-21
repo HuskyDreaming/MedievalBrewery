@@ -1,11 +1,19 @@
 package com.huskydreaming.medieval.brewery.utils;
 
+import com.huskydreaming.medieval.brewery.data.Brewery;
+
 public class TimeUtil {
 
     private static final int SECOND = 1000;
     private static final int MINUTE = 60 * SECOND;
     private static final int HOUR = 60 * MINUTE;
     private static final int DAY = 24 * HOUR;
+
+    public static long timeDifference(Brewery brewery) {
+        long systemTime = System.currentTimeMillis();
+        long breweryTime = brewery.getTimeStamp();
+        return breweryTime - systemTime;
+    }
 
     public static String convertTimeStamp(long milliseconds) {
         long ms = milliseconds;
