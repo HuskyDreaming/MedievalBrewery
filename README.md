@@ -30,9 +30,6 @@ With Medieval Brewery, your players can enjoy a fully immersive brewing experien
 2. Place the downloaded `.jar` file into your `plugins` folder (for Bukkit, Spigot, or Paper).
 3. Restart your server or reload the plugin (`/reload` or `/restart`) to activate it.
 
-## Translation
-- German | @CptGummiball
-
 ## Configuration
 After installation, you can adjust settings via the `config.yml`:
 ```yaml
