@@ -54,7 +54,7 @@ qualities: true
 The Medieval Brewery plugin provides the following commands:
 
 - **/brewery reload**: Reloads the plugin configuration. (Requires permission: `brewery.admin`)
-- **/brewery remove**: Hides your shop in the Shop Overview. (Requires permission: `brewery.admin`)
+- **/brewery remove**: Removes a Brewery (Requires permission: `brewery.admin`)
 ## Authors
 
 - [@HuskyDreaming](https://github.com/HuskyDreaming)
