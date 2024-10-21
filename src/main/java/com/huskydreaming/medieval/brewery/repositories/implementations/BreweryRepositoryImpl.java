@@ -5,7 +5,6 @@ import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
 import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.data.Position;
-import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.storage.Json;
 import org.bukkit.NamespacedKey;
@@ -36,8 +35,8 @@ public class BreweryRepositoryImpl implements BreweryRepository {
     @Override
     public void serialize(MedievalBreweryPlugin plugin) {
         Json.write(plugin, "data/breweries", breweries);
-        plugin.getLogger().info("Successfully saved " + breweries.size() + " breweries");
         breweries.clear();
+        plugin.getLogger().info("Successfully saved " + breweries.size() + " breweries");
     }
 
     @Override
@@ -47,7 +46,6 @@ public class BreweryRepositoryImpl implements BreweryRepository {
         Hologram hologram = Hologram.create(namespacedKey, block);
         brewery.setHologram(hologram);
         brewery.setPosition(Position.of(block));
-        brewery.setStatus(BreweryStatus.IDLE);
         brewery.setOwner(player);
         breweries.add(brewery);
     }

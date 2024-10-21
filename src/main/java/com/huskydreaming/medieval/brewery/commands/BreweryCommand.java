@@ -32,26 +32,26 @@ public class BreweryCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        if (strings.length == 1) {
+        if(strings.length == 1) {
             String string = strings[0];
 
-            if (string.equalsIgnoreCase("reload")) {
+            if(string.equalsIgnoreCase("reload")) {
                 localizationHandler.reload(plugin);
                 plugin.reloadConfig();
                 commandSender.sendMessage(Message.GENERAL_RELOAD.prefix());
                 return true;
             }
 
-            if (commandSender instanceof Player player) {
-                if (string.equalsIgnoreCase("remove")) {
+            if(commandSender instanceof Player player) {
+                if(string.equalsIgnoreCase("remove")) {
                     Block block = player.getTargetBlock(null, 3);
-                    if (block.getType() != Material.BARREL) {
+                    if(block.getType() != Material.BARREL) {
                         player.sendMessage(Message.GENERAL_BLOCK.prefix());
                         return true;
                     }
 
                     Brewery brewery = breweryRepository.getBrewery(block);
-                    if (brewery == null) {
+                    if(brewery == null) {
                         player.sendMessage(Message.GENERAL_BLOCK.prefix());
                         return true;
                     }

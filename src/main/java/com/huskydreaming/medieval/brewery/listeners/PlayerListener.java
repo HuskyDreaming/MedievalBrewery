@@ -49,7 +49,7 @@ public class PlayerListener implements Listener {
 
         NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
         PersistentDataContainer dataContainer = itemMeta.getPersistentDataContainer();
-        if(!dataContainer.has(namespacedKey, PersistentDataType.STRING)) return;
+        if(!dataContainer.has(namespacedKey)) return;
 
         String data = dataContainer.get(namespacedKey, PersistentDataType.STRING);
         if(data == null) return;
@@ -122,7 +122,7 @@ public class PlayerListener implements Listener {
                     Recipe recipe = recipeRepository.getRecipe(recipeName);
                     int uses = recipe.getUses();
                     brewery.setRemaining(remaining -= 1);
-                    String header = Message.TITLE_READY_HEADER.parameterize(recipe.getChatColor(), recipeName);
+                    String header = Message.TITLE_READY_HEADER.parameterize(recipe.getItemColor(), recipeName);
                     String footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
                     hologram.update(header, footer);
                 }

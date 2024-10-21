@@ -7,20 +7,21 @@ import java.util.Objects;
 
 public class Effect {
 
-    private final String type;
-    private final int duration;
-    private final int amplifier;
+    private String type;
+    private int duration;
+    private int amplifier;
 
-    public static Effect create(String type, int duration, int amplifier) {
-        return new Effect(type, duration, amplifier);
+    public void setType(PotionEffectType type) {
+        this.type = type.getKey().getKey();
     }
 
-    public Effect(String type, int duration, int amplifier) {
-        this.type = type;
+    public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public void setAmplifier(int amplifier) {
         this.amplifier = amplifier;
     }
-
 
     public PotionEffect toPotionEffect(int multiplier) {
         PotionEffectType potionEffectType = PotionEffectType.getByName(type);

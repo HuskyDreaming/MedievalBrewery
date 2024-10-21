@@ -39,6 +39,8 @@ public class MedievalBreweryPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
+
         configHandler = new ConfigHandlerImpl();
         configHandler.initialize(this);
 

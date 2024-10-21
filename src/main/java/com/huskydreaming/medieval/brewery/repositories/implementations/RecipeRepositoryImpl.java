@@ -1,18 +1,17 @@
 package com.huskydreaming.medieval.brewery.repositories.implementations;
 
+import com.google.common.reflect.TypeToken;
 import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
 import com.huskydreaming.medieval.brewery.data.*;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
+import com.huskydreaming.medieval.brewery.storage.Json;
 import com.huskydreaming.medieval.brewery.storage.Message;
-import com.huskydreaming.medieval.brewery.storage.Yaml;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -20,16 +19,17 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RecipeRepositoryImpl implements RecipeRepository {
 
-    private final Map<String, Recipe> recipes = new HashMap<>();
-    private Yaml yaml;
+    private Map<String, Recipe> recipes = new ConcurrentHashMap<>();
 
     private QualityRepository qualityRepository;
     private ConfigHandler configHandler;
@@ -39,109 +39,19 @@ public class RecipeRepositoryImpl implements RecipeRepository {
         qualityRepository = plugin.getQualityRepository();
         configHandler = plugin.getConfigHandler();
 
-        yaml = new Yaml("recipes");
-        yaml.load(plugin);
+        Type type = new TypeToken<Map<String, Recipe>>() {}.getType();
+        recipes = Json.read(plugin, "data/recipes", type);
+        if (recipes == null) {
+            recipes = new ConcurrentHashMap<>();
+            recipes.put("Beer", getBeerRecipe());
+            recipes.put("Wine", getWineRecipe());
+            recipes.put("Spirits", getSpiritsRecipe());
 
-        if(load(plugin)) {
-            plugin.getLogger().info("Successfully loaded " + recipes.size() + " recipe(s)");
+            Json.write(plugin, "data/recipes", recipes);
+            plugin.getLogger().info("Successfully setup default recipes.");
         } else {
-            if(setup(plugin)) {
-                plugin.getLogger().info("Successfully setup default recipes");
-            }
+            plugin.getLogger().info("Successfully loaded " + recipes.size()  + " recipe(s)");
         }
-    }
-
-    @Override
-    public boolean load(MedievalBreweryPlugin plugin) {
-        FileConfiguration configuration = yaml.getConfiguration();
-        ConfigurationSection configurationSection = configuration.getConfigurationSection("");
-        if(configurationSection == null) return false;
-
-        for(String key : configurationSection.getKeys(false)) {
-            Recipe recipe = new Recipe();
-
-            List<String> ingredients = configurationSection.getStringList(key + ".ingredients");
-            for(String ingredientString : ingredients) {
-                String[] strings = ingredientString.split(",");
-                if(strings.length < 2) continue;
-
-                Material material = Material.valueOf(strings[0]);
-                int amount = Integer.parseInt(strings[1]);
-
-                recipe.addIngredient(Ingredient.create(material, amount));
-            }
-
-            List<String> effects = configurationSection.getStringList(key + ".effects");
-            for(String effectString : effects) {
-                String[] strings = effectString.split(",");
-                if(strings.length < 3) continue;
-
-                String type = strings[0];
-                int duration = Integer.parseInt(strings[1]);
-                int amplifier = Integer.parseInt(strings[2]);
-
-                recipe.addEffect(Effect.create(type, duration, amplifier));
-            }
-
-            String material = configurationSection.getString(key + ".material");
-            if(material != null) recipe.setMaterial(Material.valueOf(material));
-
-            String chatColor = configuration.getString(key + ".chatColor");
-            if(chatColor != null) recipe.setChatColor(ChatColor.valueOf(chatColor));
-
-            String potionColor = configuration.getString(key + ".potionColor");
-            if(potionColor != null) {
-                String[] strings = potionColor.split(",");
-                if(strings.length == 3) {
-                    int r = Integer.parseInt(strings[0]);
-                    int g = Integer.parseInt(strings[1]);
-                    int b = Integer.parseInt(strings[2]);
-                    recipe.setPotionColor(Color.fromRGB(r, g, b));
-                }
-            }
-
-            String description = configuration.getString(key + ".description");
-            if(description != null) recipe.setDescription(description);
-
-            int customModelData = configuration.getInt(key + ".customModelData");
-            recipe.setCustomModelData(customModelData);
-
-            int seconds = configuration.getInt(key + ".seconds");
-            recipe.setSeconds(seconds);
-
-            int uses = configuration.getInt(key + ".uses");
-            recipe.setUses(uses);
-
-            recipes.put(key, recipe);
-        }
-
-        return !recipes.isEmpty();
-    }
-
-    @Override
-    public boolean setup(MedievalBreweryPlugin plugin) {
-        FileConfiguration configuration = yaml.getConfiguration();
-
-        List<String> ingredients = new ArrayList<>();
-        ingredients.add("WHEAT_SEEDS,4");
-        ingredients.add("WHEAT,16");
-        ingredients.add("WATER_BUCKET,1");
-        configuration.set("beer.ingredients", ingredients);
-
-        List<String> effects = new ArrayList<>();
-        effects.add("luck,600,1");
-        effects.add("nausea,200,0");
-        configuration.set("beer.effects", effects);
-        configuration.set("beer.material", Material.POTION.name());
-        configuration.set("beer.chatColor", ChatColor.YELLOW.name());
-        configuration.set("beer.potionColor", "255,0,0");
-        configuration.set("beer.description", "Perfect thirst quencher");
-        configuration.set("beer.customModelData", 0);
-        configuration.set("beer.seconds", 120);
-        configuration.set("beer.uses", 12);
-
-        yaml.save();
-        return load(plugin);
     }
 
     @Override
@@ -201,18 +111,18 @@ public class RecipeRepositoryImpl implements RecipeRepository {
 
         if(recipe.getMaterial() == Material.POTION) {
             PotionMeta potionMeta = (PotionMeta) itemStack.getItemMeta();
-            if(potionMeta != null && recipe.getPotionColor() != null) {
+            if(potionMeta != null && recipe.getColor() != null) {
 
-                potionMeta.setColor(recipe.getPotionColor());
-                potionMeta.setDisplayName(Message.ITEM_NAME.parameterize(recipe.getChatColor(), recipeName));
-                potionMeta.setCustomModelData(recipe.getCustomModelData());
-                potionMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                potionMeta.setColor(recipe.getColor());
+                potionMeta.setDisplayName(Message.ITEM_NAME.parameterize(recipe.getItemColor(), recipeName));
+                potionMeta.setCustomModelData(recipe.getData());
+                potionMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 
                 String data;
                 List<String> lore;
 
                 if(qualities && quality != null) {
-                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), recipe.getDescription());
+                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(qualityName, recipe.getDescription());
                     data = recipeName + ":" + quality.getMultiplier();
                 } else {
                     lore = Message.ITEM_LORE_DEFAULT.parameterizeList(recipe.getDescription());
@@ -231,15 +141,15 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             ItemMeta itemMeta = itemStack.getItemMeta();
             if(itemMeta != null) {
 
-                itemMeta.setDisplayName(Message.ITEM_NAME.prefix(recipe.getChatColor(), recipeName));
-                itemMeta.setCustomModelData(recipe.getCustomModelData());
-                itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                itemMeta.setDisplayName(Message.ITEM_NAME.prefix(recipe.getItemColor(), recipeName));
+                itemMeta.setCustomModelData(recipe.getData());
+                itemMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 
                 String data;
                 List<String> lore;
 
                 if(qualities && quality != null) {
-                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), recipe.getDescription());
+                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(qualityName, recipe.getDescription());
                     data = recipeName + ":" + quality.getMultiplier();
                 } else {
                     lore = Message.ITEM_LORE_DEFAULT.parameterizeList(recipe.getDescription());
@@ -256,5 +166,104 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             }
         }
         return itemStack;
+    }
+
+    private Recipe getBeerRecipe() {
+        Recipe beerRecipe = new Recipe();
+        beerRecipe.setDescription("Perfect thirst quencher");
+
+        Effect nauseaEffect = new Effect();
+        nauseaEffect.setType(PotionEffectType.NAUSEA);
+        nauseaEffect.setDuration(200);
+        nauseaEffect.setAmplifier(0);
+
+        Effect luckEffect = new Effect();
+        luckEffect.setType(PotionEffectType.LUCK);
+        luckEffect.setDuration(600);
+        luckEffect.setAmplifier(1);
+
+        beerRecipe.setMaterial(Material.POTION);
+        beerRecipe.setItemColor(ChatColor.YELLOW);
+        beerRecipe.setColor(Color.YELLOW);
+        beerRecipe.setSeconds(100);
+        beerRecipe.setUses(24);
+
+        beerRecipe.addEffect(nauseaEffect);
+        beerRecipe.addEffect(luckEffect);
+
+        beerRecipe.addIngredient(new Ingredient(Material.WATER_BUCKET, 1));
+        beerRecipe.addIngredient(new Ingredient(Material.WHEAT, 16));
+        beerRecipe.addIngredient(new Ingredient(Material.WHEAT_SEEDS, 4));
+        return beerRecipe;
+    }
+
+    private Recipe getWineRecipe() {
+        Recipe wineRecipe = new Recipe();
+        wineRecipe.setDescription("Wine and dine!");
+
+        Effect nauseaEffect = new Effect();
+        nauseaEffect.setType(PotionEffectType.NAUSEA);
+        nauseaEffect.setDuration(200);
+        nauseaEffect.setAmplifier(0);
+
+        Effect regenerationEffect = new Effect();
+        regenerationEffect.setType(PotionEffectType.REGENERATION);
+        regenerationEffect.setDuration(400);
+        regenerationEffect.setAmplifier(1);
+
+        wineRecipe.setMaterial(Material.POTION);
+        wineRecipe.setItemColor(ChatColor.RED);
+        wineRecipe.setColor(Color.MAROON);
+        wineRecipe.setSeconds(120);
+        wineRecipe.setUses(16);
+
+        wineRecipe.addEffect(nauseaEffect);
+        wineRecipe.addEffect(regenerationEffect);
+        wineRecipe.addIngredient(new Ingredient(Material.WATER_BUCKET, 1));
+        wineRecipe.addIngredient(new Ingredient(Material.SWEET_BERRIES, 12));
+        wineRecipe.addIngredient(new Ingredient(Material.SUGAR, 4));
+        return wineRecipe;
+    }
+
+    private Recipe getSpiritsRecipe() {
+        Recipe spiritsRecipe = new Recipe();
+        spiritsRecipe.setDescription("The good stuff");
+
+        Effect nauseaEffect = new Effect();
+        nauseaEffect.setType(PotionEffectType.NAUSEA);
+        nauseaEffect.setDuration(200);
+        nauseaEffect.setAmplifier(0);
+
+        Effect regenerationEffect = new Effect();
+        regenerationEffect.setType(PotionEffectType.REGENERATION);
+        regenerationEffect.setDuration(600);
+        regenerationEffect.setAmplifier(1);
+
+        Effect absorptionEffect = new Effect();
+        absorptionEffect.setType(PotionEffectType.ABSORPTION);
+        absorptionEffect.setDuration(400);
+        absorptionEffect.setAmplifier(1);
+
+        Effect hasteEffect = new Effect();
+        hasteEffect.setType(PotionEffectType.HASTE);
+        hasteEffect.setDuration(400);
+        hasteEffect.setAmplifier(1);
+
+        spiritsRecipe.setMaterial(Material.POTION);
+        spiritsRecipe.setItemColor(ChatColor.AQUA);
+        spiritsRecipe.setColor(Color.AQUA);
+        spiritsRecipe.setSeconds(240);
+        spiritsRecipe.setUses(2);
+
+        spiritsRecipe.addEffect(nauseaEffect);
+        spiritsRecipe.addEffect(regenerationEffect);
+        spiritsRecipe.addEffect(absorptionEffect);
+        spiritsRecipe.addEffect(hasteEffect);
+
+        spiritsRecipe.addIngredient(new Ingredient(Material.WATER_BUCKET, 1));
+        spiritsRecipe.addIngredient(new Ingredient(Material.SUGAR, 16));
+        spiritsRecipe.addIngredient(new Ingredient(Material.QUARTZ, 8));
+        spiritsRecipe.addIngredient(new Ingredient(Material.GHAST_TEAR, 4));
+        return spiritsRecipe;
     }
 }
