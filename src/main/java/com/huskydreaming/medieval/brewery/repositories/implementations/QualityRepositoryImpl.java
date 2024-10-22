@@ -20,7 +20,10 @@ public class QualityRepositoryImpl implements QualityRepository {
 
     @Override
     public void deserialize(MedievalBreweryPlugin plugin) {
-        yaml = new Yaml("qualities");
+        qualities.clear();
+        probabilities.clear();
+
+        if(yaml == null) yaml = new Yaml("qualities");
         yaml.load(plugin);
 
         if(load(plugin)) {

@@ -5,20 +5,13 @@ import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.LocalizationHandler;
 import com.huskydreaming.medieval.brewery.storage.Message;
 import com.huskydreaming.medieval.brewery.storage.Yaml;
-import org.bukkit.plugin.Plugin;
 
 public class LocalizationHandlerImpl implements LocalizationHandler {
 
-    private ConfigHandler configHandler;
-
     @Override
     public void initialize(MedievalBreweryPlugin plugin) {
-        configHandler = plugin.getConfigHandler();
-        reload(plugin);
-    }
+        ConfigHandler configHandler = plugin.getConfigHandler();
 
-    @Override
-    public void reload(Plugin plugin) {
         String language = configHandler.getLanguage();
         Yaml yaml = new Yaml("localization/" + language);
 

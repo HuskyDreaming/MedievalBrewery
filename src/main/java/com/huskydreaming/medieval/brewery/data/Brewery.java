@@ -15,6 +15,7 @@ public class Brewery {
     private long timeStamp;
     private UUID uuid;
     private int remaining;
+    private int waterLevel;
 
     private transient Hologram hologram;
 
@@ -74,6 +75,18 @@ public class Brewery {
         this.remaining = remaining;
     }
 
+    public int getWaterLevel() {
+        return waterLevel;
+    }
+
+    public void setWaterLevel(int waterLevel) {
+        this.waterLevel = waterLevel;
+    }
+
+    public void addWaterLevel() {
+        this.waterLevel += 1;
+    }
+
     public Hologram getHologram() {
         return hologram;
     }
@@ -85,19 +98,20 @@ public class Brewery {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Brewery brewery = (Brewery) o;
+        if (!(o instanceof Brewery brewery)) return false;
         return timeStamp == brewery.timeStamp &&
                 remaining == brewery.remaining &&
+                waterLevel == brewery.waterLevel &&
                 status == brewery.status &&
                 Objects.equals(position, brewery.position) &&
                 Objects.equals(recipeName, brewery.recipeName) &&
                 Objects.equals(qualityName, brewery.qualityName) &&
-                Objects.equals(uuid, brewery.uuid);
+                Objects.equals(uuid, brewery.uuid) &&
+                Objects.equals(hologram, brewery.hologram);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position, status, recipeName, qualityName, timeStamp, uuid, remaining);
+        return Objects.hash(position, status, recipeName, qualityName, timeStamp, uuid, remaining, waterLevel, hologram);
     }
 }

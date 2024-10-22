@@ -22,6 +22,8 @@ public enum Message implements Parseable {
     GENERAL_LIMIT("You can only have &f<0>#b5b5b5 brewery at a time."),
     GENERAL_NOTIFY("The <0><1> #b5b5b5brew is ready for consumption."),
     GENERAL_OWNER("You must be owner to remove the brewery."),
+    GENERAL_PERMISSION("You do not have permission."),
+    GENERAL_PERMISSION_BREW("You do not have permission to brew &f<0>#b5b5b5."),
     GENERAL_RELOAD("Successfully reloaded the plugin!"),
     GENERAL_REMOVE("You have removed the brewery."),
     GENERAL_REMOVE_BLOCK("Your brewery got removed because it got obstructed by another block"),
@@ -34,7 +36,9 @@ public enum Message implements Parseable {
     TITLE_READY_HEADER("<0><1>"),
     TITLE_READY_FOOTER("#b5b5b5Ready to collect! #b4e52a<0>#75902c/#b4e52a<1>"),
     TITLE_TIME_HEADER("<0><1>"),
-    TITLE_TIME_FOOTER("#b5b5b5Finishes in #b5e74a<0>");
+    TITLE_TIME_FOOTER("#b5b5b5Finishes in #b5e74a<0>"),
+    TITLE_WATER_HEADER("<0><1>"),
+    TITLE_WATER_FOOTER("#b5b5b5Add water! #548ef3<0>#265098/#548ef3<1>");
 
 
     private final String def;

@@ -97,6 +97,10 @@ public class MedievalBreweryPlugin extends JavaPlugin {
         return recipeRepository;
     }
 
+    public BreweryHandler getBreweryHandler() {
+        return breweryHandler;
+    }
+
     public ConfigHandler getConfigHandler() {
         return configHandler;
     }

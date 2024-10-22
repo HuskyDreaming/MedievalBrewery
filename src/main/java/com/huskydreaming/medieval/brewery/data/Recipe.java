@@ -1,7 +1,4 @@
 package com.huskydreaming.medieval.brewery.data;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
 
 import java.util.*;
 
@@ -10,14 +7,12 @@ public class Recipe {
     private final Set<Ingredient> ingredients;
     private final Set<Effect> effects;
 
-    private Material material;
-    private ChatColor chatColor;
-    private Color potionColor;
-    private String description;
+    private Item item;
+    private String permission;
 
-    private int customModelData;
     private int seconds;
     private int uses;
+    private int water;
 
     public Recipe() {
         ingredients = new HashSet<>();
@@ -41,44 +36,20 @@ public class Recipe {
         return Collections.unmodifiableSet(effects);
     }
 
-    public Material getMaterial() {
-        return material;
+    public Item getItem() {
+        return item;
     }
 
-    public void setMaterial(Material material) {
-        this.material = material;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
-    public Color getPotionColor() {
-        return potionColor;
+    public String getPermission() {
+        return permission;
     }
 
-    public void setPotionColor(Color potionColor) {
-        this.potionColor = potionColor;
-    }
-
-    public ChatColor getChatColor() {
-        return chatColor;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setChatColor(ChatColor chatColor) {
-        this.chatColor = chatColor;
-    }
-
-    public int getCustomModelData() {
-        return customModelData;
-    }
-
-    public void setCustomModelData(int customModelData) {
-        this.customModelData = customModelData;
+    public void setPermission(String permission) {
+        this.permission = permission;
     }
 
     public int getSeconds() {
@@ -97,23 +68,28 @@ public class Recipe {
         this.uses = uses;
     }
 
+    public int getWater() {
+        return water;
+    }
+
+    public void setWater(int water) {
+        this.water = water;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Recipe recipe = (Recipe) o;
-        return customModelData == recipe.customModelData &&
-                seconds == recipe.seconds &&
+        if (!(o instanceof Recipe recipe)) return false;
+        return seconds == recipe.seconds &&
                 uses == recipe.uses &&
-                material == recipe.material &&
-                chatColor == recipe.chatColor &&
-                Objects.equals(potionColor, recipe.potionColor) &&
+                water == recipe.water &&
                 Objects.equals(ingredients, recipe.ingredients) &&
-                Objects.equals(effects, recipe.effects);
+                Objects.equals(effects, recipe.effects) &&
+                Objects.equals(item, recipe.item);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ingredients, effects, material, chatColor, potionColor, customModelData, seconds, uses);
+        return Objects.hash(ingredients, effects, item, seconds, uses, water);
     }
 }
