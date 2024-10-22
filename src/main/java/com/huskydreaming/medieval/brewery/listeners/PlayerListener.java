@@ -3,9 +3,9 @@ package com.huskydreaming.medieval.brewery.listeners;
 import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
 import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Effect;
-import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.data.Recipe;
 import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.BreweryHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
@@ -31,12 +31,14 @@ public class PlayerListener implements Listener {
     private final BreweryRepository breweryRepository;
     private final RecipeRepository recipeRepository;
 
+    private final BreweryHandler breweryHandler;
     private final ConfigHandler configHandler;
 
     public PlayerListener(MedievalBreweryPlugin plugin) {
         this.breweryRepository = plugin.getBreweryRepository();
         this.recipeRepository = plugin.getRecipeRepository();
 
+        this.breweryHandler = plugin.getBreweryHandler();
         this.configHandler = plugin.getConfigHandler();
     }
 
@@ -45,31 +47,31 @@ public class PlayerListener implements Listener {
         ItemStack itemStack = event.getItem();
 
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return;
+        if (itemMeta == null) return;
 
         NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
         PersistentDataContainer dataContainer = itemMeta.getPersistentDataContainer();
-        if(!dataContainer.has(namespacedKey, PersistentDataType.STRING)) return;
+        if (!dataContainer.has(namespacedKey, PersistentDataType.STRING)) return;
 
         String data = dataContainer.get(namespacedKey, PersistentDataType.STRING);
-        if(data == null) return;
+        if (data == null) return;
 
         String recipeName = data;
         int multiplier = 1;
 
-        if(configHandler.hasQualities()) {
+        if (configHandler.hasQualities()) {
             String[] splitData = data.split(":");
             recipeName = splitData[0];
             multiplier = Integer.parseInt(splitData[1]);
         }
 
         Recipe recipe = recipeRepository.getRecipe(recipeName);
-        if(recipe == null) return;
+        if (recipe == null) return;
 
         Player player = event.getPlayer();
-        for(Effect effect : recipe.getEffects()) {
+        for (Effect effect : recipe.getEffects()) {
             PotionEffect potionEffect = effect.toPotionEffect(multiplier);
-            if(potionEffect == null) continue;
+            if (potionEffect == null) continue;
             player.addPotionEffect(potionEffect);
         }
     }
@@ -93,6 +95,9 @@ public class PlayerListener implements Listener {
                 return;
             } else if (brewery.getStatus() == BreweryStatus.READY) {
                 event.setCancelled(true);
+            } else if (brewery.getStatus() == BreweryStatus.WATER) {
+                breweryHandler.updateWater(brewery, event.getItem());
+                event.setCancelled(true);
             }
         }
 
@@ -106,38 +111,9 @@ public class PlayerListener implements Listener {
             Block relativeBlock = block.getRelative(blockFace);
 
             if (!breweryRepository.isBrewery(relativeBlock)) return;
+            breweryHandler.retrieveBottle(event.getPlayer(), itemStack, relativeBlock);
 
             event.setCancelled(true);
-
-            Brewery brewery = breweryRepository.getBrewery(relativeBlock);
-            if (brewery.getStatus() == BreweryStatus.READY) {
-                Hologram hologram = brewery.getHologram();
-                String recipeName = brewery.getRecipeName();
-                int remaining = brewery.getRemaining();
-
-                if (remaining <= 1) {
-                    hologram.update(Message.TITLE_IDLE_HEADER.parse(), Message.TITLE_IDLE_FOOTER.parse());
-                    brewery.setStatus(BreweryStatus.IDLE);
-                } else {
-                    Recipe recipe = recipeRepository.getRecipe(recipeName);
-                    int uses = recipe.getUses();
-                    brewery.setRemaining(remaining -= 1);
-                    String header = Message.TITLE_READY_HEADER.parameterize(recipe.getChatColor(), recipeName);
-                    String footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
-                    hologram.update(header, footer);
-                }
-
-                itemStack.setAmount(itemStack.getAmount() - 1);
-                ItemStack recipeItem = recipeRepository.getRecipeItem(brewery);
-                Player player = event.getPlayer();
-                player.getInventory().addItem(recipeItem);
-
-                Location location = block.getLocation();
-                World world = location.getWorld();
-                if (world != null) {
-                    world.playSound(block.getLocation(), Sound.ENTITY_WANDERING_TRADER_DRINK_MILK, 1, 1);
-                }
-            }
         }
     }
 }

@@ -7,7 +7,7 @@ import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityReposit
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import com.huskydreaming.medieval.brewery.storage.Message;
 import com.huskydreaming.medieval.brewery.storage.Yaml;
-import org.bukkit.ChatColor;
+import com.huskydreaming.medieval.brewery.utils.TextUtils;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -36,10 +36,12 @@ public class RecipeRepositoryImpl implements RecipeRepository {
 
     @Override
     public void deserialize(MedievalBreweryPlugin plugin) {
+        recipes.clear();
+
         qualityRepository = plugin.getQualityRepository();
         configHandler = plugin.getConfigHandler();
 
-        yaml = new Yaml("recipes");
+        if(yaml == null) yaml = new Yaml("recipes");
         yaml.load(plugin);
 
         if(load(plugin)) {
@@ -63,12 +65,22 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             List<String> ingredients = configurationSection.getStringList(key + ".ingredients");
             for(String ingredientString : ingredients) {
                 String[] strings = ingredientString.split(",");
-                if(strings.length < 2) continue;
 
-                Material material = Material.valueOf(strings[0]);
-                int amount = Integer.parseInt(strings[1]);
+                Material material = null;
 
-                recipe.addIngredient(Ingredient.create(material, amount));
+                int amount = 1;
+                if(strings.length >= 2) {
+                    material = Material.valueOf(strings[0]);
+                    amount = Integer.parseInt(strings[1]);
+                }
+
+                int customModelData = 0;
+                if(strings.length == 3) {
+                    customModelData = Integer.parseInt(strings[2]);
+                }
+                if(material == null) continue;
+
+                recipe.addIngredient(Ingredient.create(material, amount, customModelData));
             }
 
             List<String> effects = configurationSection.getStringList(key + ".effects");
@@ -83,34 +95,44 @@ public class RecipeRepositoryImpl implements RecipeRepository {
                 recipe.addEffect(Effect.create(type, duration, amplifier));
             }
 
-            String material = configurationSection.getString(key + ".material");
-            if(material != null) recipe.setMaterial(Material.valueOf(material));
+            Item item = new Item();
 
-            String chatColor = configuration.getString(key + ".chatColor");
-            if(chatColor != null) recipe.setChatColor(ChatColor.valueOf(chatColor));
+            String material = configurationSection.getString(key + ".item.material");
+            if(material != null) item.setMaterial(material);
 
-            String potionColor = configuration.getString(key + ".potionColor");
+            String displayName = configuration.getString(key + ".item.displayName");
+            if(displayName != null) item.setDisplayName(displayName);
+
+            String potionColor = configuration.getString(key + ".item.potionColor");
             if(potionColor != null) {
                 String[] strings = potionColor.split(",");
                 if(strings.length == 3) {
                     int r = Integer.parseInt(strings[0]);
                     int g = Integer.parseInt(strings[1]);
                     int b = Integer.parseInt(strings[2]);
-                    recipe.setPotionColor(Color.fromRGB(r, g, b));
+                    item.setPotionColor(Color.fromRGB(r, g, b));
                 }
             }
 
-            String description = configuration.getString(key + ".description");
-            if(description != null) recipe.setDescription(description);
+            String description = configuration.getString(key + ".item.description");
+            if(description != null) item.setDescription(description);
 
-            int customModelData = configuration.getInt(key + ".customModelData");
-            recipe.setCustomModelData(customModelData);
+            int customModelData = configuration.getInt(key + ".item.customModelData");
+            item.setCustomModelData(customModelData);
 
-            int seconds = configuration.getInt(key + ".seconds");
+            recipe.setItem(item);
+
+            int seconds = configuration.getInt(key + ".options.seconds");
             recipe.setSeconds(seconds);
 
-            int uses = configuration.getInt(key + ".uses");
+            int uses = configuration.getInt(key + ".options.uses");
             recipe.setUses(uses);
+
+            int water = configuration.getInt(key + ".options.water");
+            recipe.setWater(water);
+
+            String permission = configuration.getString(key + ".permission");
+            if(permission != null) recipe.setPermission(permission);
 
             recipes.put(key, recipe);
         }
@@ -125,20 +147,21 @@ public class RecipeRepositoryImpl implements RecipeRepository {
         List<String> ingredients = new ArrayList<>();
         ingredients.add("WHEAT_SEEDS,4");
         ingredients.add("WHEAT,16");
-        ingredients.add("WATER_BUCKET,1");
         configuration.set("beer.ingredients", ingredients);
 
         List<String> effects = new ArrayList<>();
         effects.add("luck,600,1");
         effects.add("nausea,200,0");
         configuration.set("beer.effects", effects);
-        configuration.set("beer.material", Material.POTION.name());
-        configuration.set("beer.chatColor", ChatColor.YELLOW.name());
-        configuration.set("beer.potionColor", "255,0,0");
-        configuration.set("beer.description", "Perfect thirst quencher");
-        configuration.set("beer.customModelData", 0);
-        configuration.set("beer.seconds", 120);
-        configuration.set("beer.uses", 12);
+        configuration.set("beer.item.material", Material.POTION.name());
+        configuration.set("beer.item.displayName", "&eBeer");
+        configuration.set("beer.item.potionColor", "185,166,94");
+        configuration.set("beer.item.description", "Perfect thirst quencher");
+        configuration.set("beer.item.customModelData", 0);
+        configuration.set("beer.options.seconds", 120);
+        configuration.set("beer.options.uses", 12);
+        configuration.set("beer.options.water", 2);
+        configuration.set("beer.permission", "brewery.brew.beer");
 
         yaml.save();
         return load(plugin);
@@ -188,9 +211,10 @@ public class RecipeRepositoryImpl implements RecipeRepository {
     public ItemStack getRecipeItem(Brewery brewery) {
         String recipeName = brewery.getRecipeName();
         Recipe recipe = recipes.get(recipeName);
+        Item item = recipe.getItem();
 
-        if(recipe.getMaterial() == null) return null;
-        ItemStack itemStack = new ItemStack(recipe.getMaterial());
+        if(item.getMaterial() == null) return null;
+        ItemStack itemStack = new ItemStack(item.getMaterial());
 
         Quality quality = null;
         String qualityName = brewery.getQualityName();
@@ -199,23 +223,23 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             quality = qualityRepository.getQuality(qualityName);
         }
 
-        if(recipe.getMaterial() == Material.POTION) {
+        if(item.getMaterial() == Material.POTION) {
             PotionMeta potionMeta = (PotionMeta) itemStack.getItemMeta();
-            if(potionMeta != null && recipe.getPotionColor() != null) {
+            if(potionMeta != null && item.getPotionColor() != null) {
 
-                potionMeta.setColor(recipe.getPotionColor());
-                potionMeta.setDisplayName(Message.ITEM_NAME.parameterize(recipe.getChatColor(), recipeName));
-                potionMeta.setCustomModelData(recipe.getCustomModelData());
+                potionMeta.setColor(item.getPotionColor());
+                potionMeta.setDisplayName(TextUtils.hex(item.getDisplayName()));
+                potionMeta.setCustomModelData(item.getCustomModelData());
                 potionMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
                 String data;
                 List<String> lore;
 
                 if(qualities && quality != null) {
-                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), recipe.getDescription());
+                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), item.getDescription());
                     data = recipeName + ":" + quality.getMultiplier();
                 } else {
-                    lore = Message.ITEM_LORE_DEFAULT.parameterizeList(recipe.getDescription());
+                    lore = Message.ITEM_LORE_DEFAULT.parameterizeList(item.getDescription());
                     data = recipeName;
                 }
 
@@ -231,18 +255,18 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             ItemMeta itemMeta = itemStack.getItemMeta();
             if(itemMeta != null) {
 
-                itemMeta.setDisplayName(Message.ITEM_NAME.prefix(recipe.getChatColor(), recipeName));
-                itemMeta.setCustomModelData(recipe.getCustomModelData());
+                itemMeta.setDisplayName(TextUtils.hex(item.getDisplayName()));
+                itemMeta.setCustomModelData(item.getCustomModelData());
                 itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
                 String data;
                 List<String> lore;
 
                 if(qualities && quality != null) {
-                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), recipe.getDescription());
+                    lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), item.getDescription());
                     data = recipeName + ":" + quality.getMultiplier();
                 } else {
-                    lore = Message.ITEM_LORE_DEFAULT.parameterizeList(recipe.getDescription());
+                    lore = Message.ITEM_LORE_DEFAULT.parameterizeList(item.getDescription());
                     data = recipeName;
                 }
 

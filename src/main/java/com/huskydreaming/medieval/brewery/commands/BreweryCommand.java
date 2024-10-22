@@ -5,6 +5,8 @@ import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.LocalizationHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
+import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
+import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import com.huskydreaming.medieval.brewery.storage.Message;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -23,11 +25,15 @@ public class BreweryCommand implements CommandExecutor, TabCompleter {
     private final MedievalBreweryPlugin plugin;
     private final LocalizationHandler localizationHandler;
     private final BreweryRepository breweryRepository;
+    private final QualityRepository qualityRepository;
+    private final RecipeRepository recipeRepository;
 
     public BreweryCommand(MedievalBreweryPlugin plugin) {
         this.plugin = plugin;
         this.localizationHandler = plugin.getLocalizationHandler();
         this.breweryRepository = plugin.getBreweryRepository();
+        this.qualityRepository = plugin.getQualityRepository();
+        this.recipeRepository = plugin.getRecipeRepository();
     }
 
     @Override
@@ -36,7 +42,14 @@ public class BreweryCommand implements CommandExecutor, TabCompleter {
             String string = strings[0];
 
             if (string.equalsIgnoreCase("reload")) {
-                localizationHandler.reload(plugin);
+                if(!commandSender.hasPermission("brewery.reload")) {
+                    commandSender.sendMessage(Message.GENERAL_PERMISSION.prefix());
+                    return true;
+                }
+                localizationHandler.initialize(plugin);
+                qualityRepository.deserialize(plugin);
+                recipeRepository.deserialize(plugin);
+
                 plugin.reloadConfig();
                 commandSender.sendMessage(Message.GENERAL_RELOAD.prefix());
                 return true;
@@ -44,6 +57,11 @@ public class BreweryCommand implements CommandExecutor, TabCompleter {
 
             if (commandSender instanceof Player player) {
                 if (string.equalsIgnoreCase("remove")) {
+                    if(!commandSender.hasPermission("brewery.remove")) {
+                        commandSender.sendMessage(Message.GENERAL_PERMISSION.prefix());
+                        return true;
+                    }
+
                     Block block = player.getTargetBlock(null, 3);
                     if (block.getType() != Material.BARREL) {
                         player.sendMessage(Message.GENERAL_BLOCK.prefix());
