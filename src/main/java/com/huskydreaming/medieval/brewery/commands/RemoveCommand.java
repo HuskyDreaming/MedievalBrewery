@@ -11,7 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-@CommandAnnotation(label = "reload")
+@CommandAnnotation(label = "remove")
 public class RemoveCommand implements PlayerCommandProvider {
 
     private final BreweryRepository breweryRepository;
