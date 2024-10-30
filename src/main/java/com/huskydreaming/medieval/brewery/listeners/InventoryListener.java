@@ -1,14 +1,14 @@
 package com.huskydreaming.medieval.brewery.listeners;
 
-import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
+import com.huskydreaming.huskycore.HuskyPlugin;
+import com.huskydreaming.huskycore.utilities.Util;
 import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.data.Recipe;
 import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
-import com.huskydreaming.medieval.brewery.storage.Message;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.medieval.brewery.enumerations.Message;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -23,9 +23,9 @@ public class InventoryListener implements Listener {
     private final BreweryRepository breweryRepository;
     private final RecipeRepository recipeRepository;
 
-    public InventoryListener(MedievalBreweryPlugin plugin) {
-        this.breweryRepository = plugin.getBreweryRepository();
-        this.recipeRepository = plugin.getRecipeRepository();
+    public InventoryListener(HuskyPlugin plugin) {
+        this.breweryRepository = plugin.provide(BreweryRepository.class);
+        this.recipeRepository = plugin.provide(RecipeRepository.class);
     }
 
     @EventHandler
@@ -61,7 +61,7 @@ public class InventoryListener implements Listener {
             brewery.setStatus(BreweryStatus.WATER);
 
             Hologram hologram = brewery.getHologram();
-            String header = TextUtils.hex(recipe.getItem().getDisplayName());
+            String header = Util.hex(recipe.getItem().getDisplayName());
             String footer = Message.TITLE_WATER_FOOTER.parameterize(brewery.getWaterLevel(), recipe.getWater());
             hologram.update(header, footer);
 

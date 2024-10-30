@@ -27,9 +27,17 @@ public class Ingredient {
         this.amount = itemStack.getAmount();
 
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta != null && itemMeta.hasCustomModelData()) {
+        if (itemMeta != null && itemMeta.hasCustomModelData()) {
             this.customModelData = itemMeta.getCustomModelData();
         }
+    }
+
+    public Material getMaterial() {
+        return Material.valueOf(material);
+    }
+
+    public int getAmount() {
+        return amount;
     }
 
     @Override

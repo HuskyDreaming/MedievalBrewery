@@ -21,11 +21,22 @@ public class Effect {
         this.amplifier = amplifier;
     }
 
-
     public PotionEffect toPotionEffect(int multiplier) {
         PotionEffectType potionEffectType = PotionEffectType.getByName(type);
         if (potionEffectType == null) return null;
         return new PotionEffect(potionEffectType, duration * multiplier, amplifier * multiplier);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public int getAmplifier() {
+        return amplifier;
     }
 
     @Override

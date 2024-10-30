@@ -1,7 +1,7 @@
 package com.huskydreaming.medieval.brewery.data;
 
-import com.huskydreaming.medieval.brewery.storage.Message;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.huskycore.utilities.Util;
+import com.huskydreaming.medieval.brewery.enumerations.Message;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -32,8 +32,8 @@ public class Hologram {
     }
 
     public void update(String header, String footer) {
-        this.header.setCustomName(TextUtils.hex(header));
-        this.footer.setCustomName(TextUtils.hex(footer));
+        this.header.setCustomName(Util.hex(header));
+        this.footer.setCustomName(Util.hex(footer));
     }
 
     public void delete() {
@@ -54,7 +54,7 @@ public class Hologram {
         armorStand.setAI(false);
         armorStand.setCollidable(false);
         armorStand.setCanPickupItems(false);
-        armorStand.setCustomName(TextUtils.hex(title));
+        armorStand.setCustomName(Util.hex(title));
 
         return armorStand;
     }

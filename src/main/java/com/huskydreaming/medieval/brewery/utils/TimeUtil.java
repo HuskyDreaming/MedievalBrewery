@@ -35,4 +35,29 @@ public class TimeUtil {
         }
         return text.toString();
     }
+
+    public static String format(int totalSeconds) {
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+
+        StringBuilder formattedTime = new StringBuilder();
+
+        // Add hours only if they are > 0
+        if (hours > 0) {
+            formattedTime.append(hours).append("h ");
+        }
+
+        // Add minutes only if they are > 0 or if hours exist
+        if (minutes > 0) {
+            formattedTime.append(minutes).append("m ");
+        }
+
+        // Add seconds only if they are > 0 and no hours or minutes exist (e.g., 45s)
+        if (seconds > 0 && hours == 0 && minutes == 0) {
+            formattedTime.append(seconds).append("s ");
+        }
+
+        return formattedTime.toString().trim(); // Remove the trailing space
+    }
 }

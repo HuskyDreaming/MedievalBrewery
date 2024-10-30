@@ -1,16 +1,16 @@
 package com.huskydreaming.medieval.brewery.handlers.implementations;
 
-import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
+import com.huskydreaming.huskycore.HuskyPlugin;
+import com.huskydreaming.huskycore.storage.Yaml;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.LocalizationHandler;
-import com.huskydreaming.medieval.brewery.storage.Message;
-import com.huskydreaming.medieval.brewery.storage.Yaml;
+import com.huskydreaming.medieval.brewery.enumerations.Message;
 
 public class LocalizationHandlerImpl implements LocalizationHandler {
 
     @Override
-    public void initialize(MedievalBreweryPlugin plugin) {
-        ConfigHandler configHandler = plugin.getConfigHandler();
+    public void initialize(HuskyPlugin plugin) {
+        ConfigHandler configHandler = plugin.provide(ConfigHandler.class);
 
         String language = configHandler.getLanguage();
         Yaml yaml = new Yaml("localization/" + language);

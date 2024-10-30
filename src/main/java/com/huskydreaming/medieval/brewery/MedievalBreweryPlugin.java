@@ -1,6 +1,11 @@
 package com.huskydreaming.medieval.brewery;
 
+import com.huskydreaming.huskycore.HuskyPlugin;
+import com.huskydreaming.huskycore.handlers.interfaces.CommandHandler;
 import com.huskydreaming.medieval.brewery.commands.BreweryCommand;
+import com.huskydreaming.medieval.brewery.commands.RecipeCommand;
+import com.huskydreaming.medieval.brewery.commands.ReloadCommand;
+import com.huskydreaming.medieval.brewery.commands.RemoveCommand;
 import com.huskydreaming.medieval.brewery.handlers.implementations.BreweryHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.implementations.ConfigHandlerImpl;
 import com.huskydreaming.medieval.brewery.handlers.implementations.DependencyHandlerImpl;
@@ -20,96 +25,45 @@ import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryReposit
 import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import org.bukkit.NamespacedKey;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class MedievalBreweryPlugin extends JavaPlugin {
+public class MedievalBreweryPlugin extends HuskyPlugin {
 
     private static NamespacedKey namespacedKey;
 
-    private BreweryRepository breweryRepository;
-    private QualityRepository qualityRepository;
-    private RecipeRepository recipeRepository;
-
-    private BreweryHandler breweryHandler;
-    private ConfigHandler configHandler;
-    private DependencyHandler dependencyHandler;
-    private LocalizationHandler localizationHandler;
-
     @Override
-    public void onEnable() {
-        configHandler = new ConfigHandlerImpl();
-        configHandler.initialize(this);
-
-        localizationHandler = new LocalizationHandlerImpl();
-        localizationHandler.initialize(this);
-
+    public void onInitialize() {
         namespacedKey = new NamespacedKey(this, "MedievalBrewery");
 
-        if(configHandler.hasQualities()) {
-            qualityRepository = new QualityRepositoryImpl();
-            qualityRepository.deserialize(this);
-        }
-
-        recipeRepository = new RecipeRepositoryImpl();
-        recipeRepository.deserialize(this);
-
-        breweryRepository = new BreweryRepositoryImpl();
-        breweryRepository.deserialize(this);
-
-        breweryHandler = new BreweryHandlerImpl(this);
-        breweryHandler.initialize(this);
-        breweryHandler.run(this);
-
-        dependencyHandler = new DependencyHandlerImpl();
-        dependencyHandler.initialize(this);
-
-        PluginManager pluginManager = getServer().getPluginManager();
-        pluginManager.registerEvents(new BlockListener(this), this);
-        pluginManager.registerEvents(new EntityListener(), this);
-        pluginManager.registerEvents(new InventoryListener(this), this);
-        pluginManager.registerEvents(new PlayerListener(this), this);
-
-        PluginCommand pluginCommand = getCommand("brewery");
-        if(pluginCommand != null) pluginCommand.setExecutor(new BreweryCommand(this));
+        handlerRegistry.register(ConfigHandler.class, new ConfigHandlerImpl());
+        handlerRegistry.register(LocalizationHandler.class, new LocalizationHandlerImpl());
+        handlerRegistry.register(BreweryHandler.class, new BreweryHandlerImpl());
+        handlerRegistry.register(DependencyHandler.class, new DependencyHandlerImpl());
+        repositoryRegistry.register(BreweryRepository.class, new BreweryRepositoryImpl());
+        repositoryRegistry.register(RecipeRepository.class, new RecipeRepositoryImpl());
     }
 
     @Override
-    public void onDisable() {
-        breweryHandler.finalize(this);
-        breweryRepository.serialize(this);
+    public void onPostInitialize() {
+        ConfigHandler configHandler = handlerRegistry.provide(ConfigHandler.class);
+        if(configHandler.hasQualities()) {
+            repositoryRegistry.register(QualityRepository.class, new QualityRepositoryImpl());
+        }
+
+        CommandHandler commandHandler = handlerRegistry.provide(CommandHandler.class);
+        commandHandler.setCommandExecutor(new BreweryCommand(this));
+        commandHandler.add(new RecipeCommand(this));
+        commandHandler.add(new ReloadCommand(this));
+        commandHandler.add(new RemoveCommand(this));
+
+        registerListeners(
+                new BlockListener(this),
+                new EntityListener(),
+                new InventoryListener(this),
+                new PlayerListener(this)
+        );
     }
 
     public static NamespacedKey getNamespacedKey() {
         return namespacedKey;
-    }
-
-    public BreweryRepository getBreweryRepository() {
-        return breweryRepository;
-    }
-
-    public QualityRepository getQualityRepository() {
-        return qualityRepository;
-    }
-
-    public RecipeRepository getRecipeRepository() {
-        return recipeRepository;
-    }
-
-    public BreweryHandler getBreweryHandler() {
-        return breweryHandler;
-    }
-
-    public ConfigHandler getConfigHandler() {
-        return configHandler;
-    }
-
-    public DependencyHandler getDependencyHandler() {
-        return dependencyHandler;
-    }
-
-    public LocalizationHandler getLocalizationHandler() {
-        return localizationHandler;
     }
 }

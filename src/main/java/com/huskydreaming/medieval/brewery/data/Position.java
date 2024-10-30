@@ -18,6 +18,17 @@ public class Position {
         return new Position(block);
     }
 
+    public static Position of(int x, int y, int z, UUID worldUID) {
+        return new Position(x, y, z, worldUID);
+    }
+
+    public Position(int x, int y, int z, UUID worldUID) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.worldUID = worldUID;
+    }
+
     public Position(Block block) {
         x = block.getX();
         y = block.getY();
@@ -25,9 +36,25 @@ public class Position {
         worldUID = block.getWorld().getUID();
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getZ() {
+        return z;
+    }
+
+    public UUID getWorldUID() {
+        return worldUID;
+    }
+
     public Block toBlock() {
         World world = Bukkit.getWorld(worldUID);
-        if(world == null) return null;
+        if (world == null) return null;
         return world.getBlockAt(x, y, z);
     }
 

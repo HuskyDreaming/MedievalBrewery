@@ -1,8 +1,9 @@
-package com.huskydreaming.medieval.brewery.storage;
+package com.huskydreaming.medieval.brewery.enumerations;
 
 import com.google.common.base.Functions;
-import com.huskydreaming.medieval.brewery.utils.Parseable;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.huskycore.storage.Yaml;
+import com.huskydreaming.huskycore.utilities.Util;
+import com.huskydreaming.huskycore.utilities.general.Parseable;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,9 +25,11 @@ public enum Message implements Parseable {
     GENERAL_OWNER("You must be owner to remove the brewery."),
     GENERAL_PERMISSION("You do not have permission."),
     GENERAL_PERMISSION_BREW("You do not have permission to brew &f<0>#b5b5b5."),
+    GENERAL_RECIPE_BOOK("You have received the recipe book!"),
     GENERAL_RELOAD("Successfully reloaded the plugin!"),
     GENERAL_REMOVE("You have removed the brewery."),
     GENERAL_REMOVE_BLOCK("Your brewery got removed because it got obstructed by another block"),
+    GENERAL_USAGE("/brewery [reload|recipe|remove]"),
     GENERAL_WORLD_GUARD_PROTECTED("You are not able to create a brewery inside a protected region."),
     ITEM_NAME("<0><1>"),
     ITEM_LORE_DEFAULT(List.of("&7<0>")),
@@ -57,7 +60,7 @@ public enum Message implements Parseable {
 
     @Override
     public String prefix(Object... objects) {
-        return TextUtils.hex(GENERAL_PREFIX.parse() + parameterize(objects));
+        return Util.hex(GENERAL_PREFIX.parse() + parameterize(objects));
     }
 
     @Nullable

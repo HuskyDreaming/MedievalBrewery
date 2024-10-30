@@ -1,12 +1,12 @@
 package com.huskydreaming.medieval.brewery.listeners;
 
-import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
+import com.huskydreaming.huskycore.HuskyPlugin;
 import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
-import com.huskydreaming.medieval.brewery.storage.Message;
+import com.huskydreaming.medieval.brewery.enumerations.Message;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -21,15 +21,13 @@ import java.util.Set;
 public class BlockListener implements Listener {
 
     private final BreweryRepository breweryRepository;
-
     private final ConfigHandler configHandler;
     private final DependencyHandler dependencyHandler;
 
-    public BlockListener(MedievalBreweryPlugin plugin) {
-        this.breweryRepository = plugin.getBreweryRepository();
-
-        this.configHandler = plugin.getConfigHandler();
-        this.dependencyHandler = plugin.getDependencyHandler();
+    public BlockListener(HuskyPlugin plugin) {
+        this.breweryRepository = plugin.provide(BreweryRepository.class);
+        this.configHandler = plugin.provide(ConfigHandler.class);
+        this.dependencyHandler = plugin.provide(DependencyHandler.class);
     }
 
     @EventHandler

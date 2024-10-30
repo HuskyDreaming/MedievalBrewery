@@ -6,7 +6,7 @@
 
     <groupId>com.huskydreaming.medieval</groupId>
     <artifactId>medieval-brewery</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
 
     <properties>
         <minecraft.version>1.19-R0.1-SNAPSHOT</minecraft.version>
@@ -56,6 +56,13 @@
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/huskydreaming/huskycore</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -73,9 +80,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.1.0</version>
+            <groupId>com.huskydreaming</groupId>
+            <artifactId>huskycore</artifactId>
+            <version>1.6-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

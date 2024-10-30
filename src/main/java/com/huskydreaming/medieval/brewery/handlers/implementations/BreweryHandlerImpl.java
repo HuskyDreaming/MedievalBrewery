@@ -1,5 +1,7 @@
 package com.huskydreaming.medieval.brewery.handlers.implementations;
 
+import com.huskydreaming.huskycore.HuskyPlugin;
+import com.huskydreaming.huskycore.utilities.Util;
 import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
 import com.huskydreaming.medieval.brewery.enumerations.BreweryStatus;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
@@ -10,8 +12,7 @@ import com.huskydreaming.medieval.brewery.data.Brewery;
 import com.huskydreaming.medieval.brewery.data.Hologram;
 import com.huskydreaming.medieval.brewery.data.Recipe;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.BreweryHandler;
-import com.huskydreaming.medieval.brewery.storage.Message;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.medieval.brewery.enumerations.Message;
 import com.huskydreaming.medieval.brewery.utils.TimeUtil;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -21,22 +22,19 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BreweryHandlerImpl implements BreweryHandler {
 
-    private final BreweryRepository breweryRepository;
-    private final QualityRepository qualityRepository;
-    private final RecipeRepository recipeRepository;
+    private BreweryRepository breweryRepository;
+    private QualityRepository qualityRepository;
+    private RecipeRepository recipeRepository;
 
-    private final ConfigHandler configHandler;
-
-    public BreweryHandlerImpl(MedievalBreweryPlugin plugin) {
-        this.breweryRepository = plugin.getBreweryRepository();
-        this.qualityRepository = plugin.getQualityRepository();
-        this.recipeRepository = plugin.getRecipeRepository();
-
-        this.configHandler = plugin.getConfigHandler();
-    }
+    private ConfigHandler configHandler;
 
     @Override
-    public void initialize(MedievalBreweryPlugin plugin) {
+    public void postInitialize(HuskyPlugin plugin) {
+        breweryRepository = plugin.provide(BreweryRepository.class);
+        qualityRepository = plugin.provide(QualityRepository.class);
+        recipeRepository = plugin.provide(RecipeRepository.class);
+        configHandler = plugin.provide(ConfigHandler.class);
+
         NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
 
         for(Brewery brewery : breweryRepository.getBreweries()) {
@@ -55,7 +53,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
                         int remaining = brewery.getRemaining();
                         int uses = recipe.getUses();
 
-                        header = TextUtils.hex(recipe.getItem().getDisplayName());
+                        header = Util.hex(recipe.getItem().getDisplayName());
                         footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
                     }
                 }
@@ -67,7 +65,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
                         int waterLevel = brewery.getWaterLevel();
                         int water = recipe.getWater();
 
-                        header = TextUtils.hex(recipe.getItem().getDisplayName());
+                        header = Util.hex(recipe.getItem().getDisplayName());
                         footer = Message.TITLE_WATER_FOOTER.parameterize(waterLevel, water);
                     }
                 }
@@ -86,10 +84,12 @@ public class BreweryHandlerImpl implements BreweryHandler {
 
             brewery.setHologram(hologram);
         }
+
+        run(plugin);
     }
 
     @Override
-    public void finalize(MedievalBreweryPlugin plugin) {
+    public void finalize(HuskyPlugin plugin) {
         for(Brewery brewery : breweryRepository.getBreweries()) {
             Hologram hologram = brewery.getHologram();
             if(hologram != null) hologram.delete();
@@ -97,7 +97,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
     }
 
     @Override
-    public void run(MedievalBreweryPlugin plugin) {
+    public void run(HuskyPlugin plugin) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -123,7 +123,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
                         int remaining = brewery.getRemaining();
                         int uses = recipe.getUses();
 
-                        header = TextUtils.hex(recipe.getItem().getDisplayName());
+                        header = Util.hex(recipe.getItem().getDisplayName());
                         footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
 
                         brewery.setStatus(BreweryStatus.READY);
@@ -141,7 +141,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
                     } else {
                         String timeString = TimeUtil.convertTimeStamp(timeDifference);
 
-                        header = TextUtils.hex(recipe.getItem().getDisplayName());
+                        header = Util.hex(recipe.getItem().getDisplayName());
                         footer = Message.TITLE_TIME_FOOTER.parameterize(timeString);
                     }
 
@@ -166,7 +166,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
                 Recipe recipe = recipeRepository.getRecipe(recipeName);
                 int uses = recipe.getUses();
                 brewery.setRemaining(remaining -= 1);
-                String header = TextUtils.hex(recipe.getItem().getDisplayName());
+                String header = Util.hex(recipe.getItem().getDisplayName());
                 String footer = Message.TITLE_READY_FOOTER.parameterize(remaining, uses);
                 hologram.update(header, footer);
             }
@@ -203,7 +203,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
             brewery.setTimeStamp(systemTime);
         } else {
             Hologram hologram = brewery.getHologram();
-            String header = TextUtils.hex(recipe.getItem().getDisplayName());
+            String header = Util.hex(recipe.getItem().getDisplayName());
             String footer = Message.TITLE_WATER_FOOTER.parameterize(waterLevel, water);
             hologram.update(header, footer);
         }

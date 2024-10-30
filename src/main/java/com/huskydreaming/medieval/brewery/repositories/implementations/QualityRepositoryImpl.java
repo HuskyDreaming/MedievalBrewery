@@ -1,10 +1,11 @@
 package com.huskydreaming.medieval.brewery.repositories.implementations;
 
-import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
+import com.huskydreaming.huskycore.HuskyPlugin;
+import com.huskydreaming.huskycore.storage.Yaml;
 import com.huskydreaming.medieval.brewery.data.Quality;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
-import com.huskydreaming.medieval.brewery.storage.Yaml;
 import com.huskydreaming.medieval.brewery.utils.RandomCollection;
+import org.apache.logging.log4j.util.Strings;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -19,18 +20,18 @@ public class QualityRepositoryImpl implements QualityRepository {
     private final RandomCollection<String> probabilities = new RandomCollection<>();
 
     @Override
-    public void deserialize(MedievalBreweryPlugin plugin) {
+    public void postDeserialize(HuskyPlugin plugin) {
         qualities.clear();
         probabilities.clear();
 
-        if(yaml == null) yaml = new Yaml("qualities");
+        if (yaml == null) yaml = new Yaml("qualities");
         yaml.load(plugin);
 
-        if(load(plugin)) {
-            plugin.getLogger().info("Successfully loaded " + qualities.size() + " qualities");
+        if (load(plugin)) {
+            plugin.getLogger().info("[Storage] Successfully loaded " + qualities.size() + " qualities");
         } else {
-            if(setup(plugin)) {
-                plugin.getLogger().info("Successfully setup default qualities");
+            if (setup(plugin)) {
+                plugin.getLogger().info("[Storage] Successfully setup default qualities");
             }
         }
 
@@ -38,12 +39,12 @@ public class QualityRepositoryImpl implements QualityRepository {
     }
 
     @Override
-    public boolean load(MedievalBreweryPlugin plugin) {
+    public boolean load(HuskyPlugin plugin) {
         FileConfiguration configuration = yaml.getConfiguration();
-        ConfigurationSection configurationSection = configuration.getConfigurationSection("");
-        if(configurationSection == null) return false;
+        ConfigurationSection configurationSection = configuration.getConfigurationSection(Strings.EMPTY);
+        if (configurationSection == null) return false;
 
-        for(String key : configurationSection.getKeys(false)) {
+        for (String key : configurationSection.getKeys(false)) {
             Quality quality = new Quality();
 
             double probability = configuration.getDouble(key + ".probability");
@@ -53,7 +54,7 @@ public class QualityRepositoryImpl implements QualityRepository {
             quality.setMultiplier(multiplier);
 
             String displayName = configuration.getString(key + ".displayName");
-            if(displayName != null) quality.setDisplayName(displayName);
+            if (displayName != null) quality.setDisplayName(displayName);
 
             qualities.put(key, quality);
         }
@@ -61,7 +62,7 @@ public class QualityRepositoryImpl implements QualityRepository {
     }
 
     @Override
-    public boolean setup(MedievalBreweryPlugin plugin) {
+    public boolean setup(HuskyPlugin plugin) {
         FileConfiguration configuration = yaml.getConfiguration();
         configuration.set("low.displayName", "✦✧✧");
         configuration.set("low.probability", 0.75);

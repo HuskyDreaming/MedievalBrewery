@@ -27,7 +27,6 @@ public class Recipe {
         return Collections.unmodifiableSet(ingredients);
     }
 
-
     public void addEffect(Effect effect) {
         effects.add(effect);
     }

@@ -1,13 +1,14 @@
 package com.huskydreaming.medieval.brewery.repositories.implementations;
 
+import com.huskydreaming.huskycore.HuskyPlugin;
+import com.huskydreaming.huskycore.storage.Yaml;
+import com.huskydreaming.huskycore.utilities.Util;
 import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
 import com.huskydreaming.medieval.brewery.data.*;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.QualityRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
-import com.huskydreaming.medieval.brewery.storage.Message;
-import com.huskydreaming.medieval.brewery.storage.Yaml;
-import com.huskydreaming.medieval.brewery.utils.TextUtils;
+import com.huskydreaming.medieval.brewery.enumerations.Message;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -21,10 +22,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RecipeRepositoryImpl implements RecipeRepository {
 
@@ -35,58 +33,58 @@ public class RecipeRepositoryImpl implements RecipeRepository {
     private ConfigHandler configHandler;
 
     @Override
-    public void deserialize(MedievalBreweryPlugin plugin) {
+    public void postDeserialize(HuskyPlugin plugin) {
         recipes.clear();
 
-        qualityRepository = plugin.getQualityRepository();
-        configHandler = plugin.getConfigHandler();
+        qualityRepository = plugin.provide(QualityRepository.class);
+        configHandler = plugin.provide(ConfigHandler.class);
 
-        if(yaml == null) yaml = new Yaml("recipes");
+        if (yaml == null) yaml = new Yaml("recipes");
         yaml.load(plugin);
 
-        if(load(plugin)) {
-            plugin.getLogger().info("Successfully loaded " + recipes.size() + " recipe(s)");
+        if (load(plugin)) {
+            plugin.getLogger().info("[Storage] Successfully loaded " + recipes.size() + " recipe(s)");
         } else {
-            if(setup(plugin)) {
-                plugin.getLogger().info("Successfully setup default recipes");
+            if (setup(plugin)) {
+                plugin.getLogger().info("[Storage] Successfully setup default recipes");
             }
         }
     }
 
     @Override
-    public boolean load(MedievalBreweryPlugin plugin) {
+    public boolean load(HuskyPlugin plugin) {
         FileConfiguration configuration = yaml.getConfiguration();
         ConfigurationSection configurationSection = configuration.getConfigurationSection("");
-        if(configurationSection == null) return false;
+        if (configurationSection == null) return false;
 
-        for(String key : configurationSection.getKeys(false)) {
+        for (String key : configurationSection.getKeys(false)) {
             Recipe recipe = new Recipe();
 
             List<String> ingredients = configurationSection.getStringList(key + ".ingredients");
-            for(String ingredientString : ingredients) {
+            for (String ingredientString : ingredients) {
                 String[] strings = ingredientString.split(",");
 
                 Material material = null;
 
                 int amount = 1;
-                if(strings.length >= 2) {
+                if (strings.length >= 2) {
                     material = Material.valueOf(strings[0]);
                     amount = Integer.parseInt(strings[1]);
                 }
 
                 int customModelData = 0;
-                if(strings.length == 3) {
+                if (strings.length == 3) {
                     customModelData = Integer.parseInt(strings[2]);
                 }
-                if(material == null) continue;
+                if (material == null) continue;
 
                 recipe.addIngredient(Ingredient.create(material, amount, customModelData));
             }
 
             List<String> effects = configurationSection.getStringList(key + ".effects");
-            for(String effectString : effects) {
+            for (String effectString : effects) {
                 String[] strings = effectString.split(",");
-                if(strings.length < 3) continue;
+                if (strings.length < 3) continue;
 
                 String type = strings[0];
                 int duration = Integer.parseInt(strings[1]);
@@ -98,15 +96,15 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             Item item = new Item();
 
             String material = configurationSection.getString(key + ".item.material");
-            if(material != null) item.setMaterial(material);
+            if (material != null) item.setMaterial(material);
 
             String displayName = configuration.getString(key + ".item.displayName");
-            if(displayName != null) item.setDisplayName(displayName);
+            if (displayName != null) item.setDisplayName(displayName);
 
             String potionColor = configuration.getString(key + ".item.potionColor");
-            if(potionColor != null) {
+            if (potionColor != null) {
                 String[] strings = potionColor.split(",");
-                if(strings.length == 3) {
+                if (strings.length == 3) {
                     int r = Integer.parseInt(strings[0]);
                     int g = Integer.parseInt(strings[1]);
                     int b = Integer.parseInt(strings[2]);
@@ -115,7 +113,7 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             }
 
             String description = configuration.getString(key + ".item.description");
-            if(description != null) item.setDescription(description);
+            if (description != null) item.setDescription(description);
 
             int customModelData = configuration.getInt(key + ".item.customModelData");
             item.setCustomModelData(customModelData);
@@ -132,7 +130,7 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             recipe.setWater(water);
 
             String permission = configuration.getString(key + ".permission");
-            if(permission != null) recipe.setPermission(permission);
+            if (permission != null) recipe.setPermission(permission);
 
             recipes.put(key, recipe);
         }
@@ -141,7 +139,7 @@ public class RecipeRepositoryImpl implements RecipeRepository {
     }
 
     @Override
-    public boolean setup(MedievalBreweryPlugin plugin) {
+    public boolean setup(HuskyPlugin plugin) {
         FileConfiguration configuration = yaml.getConfiguration();
 
         List<String> ingredients = new ArrayList<>();
@@ -213,29 +211,29 @@ public class RecipeRepositoryImpl implements RecipeRepository {
         Recipe recipe = recipes.get(recipeName);
         Item item = recipe.getItem();
 
-        if(item.getMaterial() == null) return null;
+        if (item.getMaterial() == null) return null;
         ItemStack itemStack = new ItemStack(item.getMaterial());
 
         Quality quality = null;
         String qualityName = brewery.getQualityName();
         boolean qualities = configHandler.hasQualities();
-        if(qualities) {
+        if (qualities) {
             quality = qualityRepository.getQuality(qualityName);
         }
 
-        if(item.getMaterial() == Material.POTION) {
+        if (item.getMaterial() == Material.POTION) {
             PotionMeta potionMeta = (PotionMeta) itemStack.getItemMeta();
-            if(potionMeta != null && item.getPotionColor() != null) {
+            if (potionMeta != null && item.getPotionColor() != null) {
 
                 potionMeta.setColor(item.getPotionColor());
-                potionMeta.setDisplayName(TextUtils.hex(item.getDisplayName()));
+                potionMeta.setDisplayName(Util.hex(item.getDisplayName()));
                 potionMeta.setCustomModelData(item.getCustomModelData());
                 potionMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
                 String data;
                 List<String> lore;
 
-                if(qualities && quality != null) {
+                if (qualities && quality != null) {
                     lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), item.getDescription());
                     data = recipeName + ":" + quality.getMultiplier();
                 } else {
@@ -253,16 +251,16 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             }
         } else {
             ItemMeta itemMeta = itemStack.getItemMeta();
-            if(itemMeta != null) {
+            if (itemMeta != null) {
 
-                itemMeta.setDisplayName(TextUtils.hex(item.getDisplayName()));
+                itemMeta.setDisplayName(Util.hex(item.getDisplayName()));
                 itemMeta.setCustomModelData(item.getCustomModelData());
                 itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
                 String data;
                 List<String> lore;
 
-                if(qualities && quality != null) {
+                if (qualities && quality != null) {
                     lore = Message.ITEM_LORE_QUALITY.parameterizeList(quality.getDisplayName(), item.getDescription());
                     data = recipeName + ":" + quality.getMultiplier();
                 } else {
@@ -280,5 +278,10 @@ public class RecipeRepositoryImpl implements RecipeRepository {
             }
         }
         return itemStack;
+    }
+
+    @Override
+    public Collection<Recipe> getRecipes() {
+        return recipes.values();
     }
 }

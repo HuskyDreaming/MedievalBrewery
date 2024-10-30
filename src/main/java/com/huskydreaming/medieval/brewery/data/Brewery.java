@@ -67,6 +67,10 @@ public class Brewery {
         this.uuid = player.getUniqueId();
     }
 
+    public void setOwner(UUID uuid) {
+        this.uuid = uuid;
+    }
+
     public int getRemaining() {
         return remaining;
     }

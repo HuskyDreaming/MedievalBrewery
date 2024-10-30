@@ -1,6 +1,6 @@
 package com.huskydreaming.medieval.brewery.handlers.implementations;
 
-import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
+import com.huskydreaming.huskycore.HuskyPlugin;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -12,7 +12,7 @@ public class ConfigHandlerImpl implements ConfigHandler {
     private String language;
 
     @Override
-    public void initialize(MedievalBreweryPlugin plugin) {
+    public void initialize(HuskyPlugin plugin) {
         plugin.saveDefaultConfig();
         FileConfiguration configuration = plugin.getConfig();
 

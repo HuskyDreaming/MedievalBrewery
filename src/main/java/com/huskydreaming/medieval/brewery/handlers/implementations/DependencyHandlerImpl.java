@@ -1,6 +1,6 @@
 package com.huskydreaming.medieval.brewery.handlers.implementations;
 
-import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
+import com.huskydreaming.huskycore.HuskyPlugin;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.DependencyHandler;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.util.Location;
@@ -16,7 +16,7 @@ public class DependencyHandlerImpl implements DependencyHandler {
     private boolean worldGuard;
 
     @Override
-    public void initialize(MedievalBreweryPlugin plugin) {
+    public void initialize(HuskyPlugin plugin) {
         PluginManager pluginManager = plugin.getServer().getPluginManager();
         if (pluginManager.getPlugin("WorldGuard") != null) {
             worldGuard = true;

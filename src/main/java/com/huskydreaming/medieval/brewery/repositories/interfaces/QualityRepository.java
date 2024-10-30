@@ -1,14 +1,14 @@
 package com.huskydreaming.medieval.brewery.repositories.interfaces;
 
-import com.huskydreaming.medieval.brewery.MedievalBreweryPlugin;
+import com.huskydreaming.huskycore.HuskyPlugin;
+import com.huskydreaming.huskycore.repositories.Repository;
 import com.huskydreaming.medieval.brewery.data.Quality;
-import com.huskydreaming.medieval.brewery.repositories.Repository;
 
 public interface QualityRepository extends Repository {
 
-    boolean load(MedievalBreweryPlugin plugin);
+    boolean load(HuskyPlugin plugin);
 
-    boolean setup(MedievalBreweryPlugin plugin);
+    boolean setup(HuskyPlugin plugin);
 
     Quality getQuality(String name);
 

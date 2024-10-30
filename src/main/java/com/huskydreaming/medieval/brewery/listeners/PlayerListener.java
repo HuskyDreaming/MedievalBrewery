@@ -9,7 +9,7 @@ import com.huskydreaming.medieval.brewery.handlers.interfaces.BreweryHandler;
 import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.BreweryRepository;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
-import com.huskydreaming.medieval.brewery.storage.Message;
+import com.huskydreaming.medieval.brewery.enumerations.Message;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -30,16 +30,14 @@ public class PlayerListener implements Listener {
 
     private final BreweryRepository breweryRepository;
     private final RecipeRepository recipeRepository;
-
     private final BreweryHandler breweryHandler;
     private final ConfigHandler configHandler;
 
     public PlayerListener(MedievalBreweryPlugin plugin) {
-        this.breweryRepository = plugin.getBreweryRepository();
-        this.recipeRepository = plugin.getRecipeRepository();
-
-        this.breweryHandler = plugin.getBreweryHandler();
-        this.configHandler = plugin.getConfigHandler();
+        this.breweryRepository = plugin.provide(BreweryRepository.class);
+        this.recipeRepository = plugin.provide(RecipeRepository.class);
+        this.breweryHandler = plugin.provide(BreweryHandler.class);
+        this.configHandler = plugin.provide(ConfigHandler.class);
     }
 
     @EventHandler

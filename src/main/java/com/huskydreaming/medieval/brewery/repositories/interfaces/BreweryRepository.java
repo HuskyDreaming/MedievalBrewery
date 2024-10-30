@@ -1,10 +1,11 @@
 package com.huskydreaming.medieval.brewery.repositories.interfaces;
 
+import com.huskydreaming.huskycore.repositories.Repository;
 import com.huskydreaming.medieval.brewery.data.Brewery;
-import com.huskydreaming.medieval.brewery.repositories.Repository;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Set;
 
 public interface BreweryRepository extends Repository {
@@ -19,5 +20,5 @@ public interface BreweryRepository extends Repository {
 
     Set<Brewery> getBreweries(Player player);
 
-    Set<Brewery> getBreweries();
+    List<Brewery> getBreweries();
 }
