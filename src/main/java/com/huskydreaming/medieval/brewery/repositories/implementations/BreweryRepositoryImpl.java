@@ -73,6 +73,7 @@ public class BreweryRepositoryImpl implements BreweryRepository {
         FileConfiguration configuration = yaml.getConfiguration();
         ConfigurationSection configurationSection = configuration.getConfigurationSection(Strings.EMPTY);
         if(configurationSection == null) return;
+
         for(String key : configurationSection.getKeys(false)) {
             configuration.set(key, null);
         }

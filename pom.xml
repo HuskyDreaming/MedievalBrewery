@@ -6,7 +6,7 @@
 
     <groupId>com.huskydreaming.medieval</groupId>
     <artifactId>medieval-brewery</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.7.2-SNAPSHOT</version>
 
     <properties>
         <minecraft.version>1.19-R0.1-SNAPSHOT</minecraft.version>

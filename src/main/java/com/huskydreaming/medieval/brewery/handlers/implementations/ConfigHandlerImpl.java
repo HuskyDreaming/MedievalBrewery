@@ -9,6 +9,7 @@ public class ConfigHandlerImpl implements ConfigHandler {
     private int limit;
     private boolean qualities;
     private boolean notifyPlayer;
+    private boolean receiveBook;
     private String language;
 
     @Override
@@ -19,6 +20,7 @@ public class ConfigHandlerImpl implements ConfigHandler {
         limit = configuration.getInt("brewery-limit");
         qualities = configuration.getBoolean("qualities");
         notifyPlayer = configuration.getBoolean("notify-player");
+        receiveBook = configuration.getBoolean("receive-book");
         language = configuration.getString("language");
     }
 
@@ -35,6 +37,11 @@ public class ConfigHandlerImpl implements ConfigHandler {
     @Override
     public boolean hasNotifyPlayer() {
         return notifyPlayer;
+    }
+
+    @Override
+    public boolean isReceiveBook() {
+        return receiveBook;
     }
 
     @Override

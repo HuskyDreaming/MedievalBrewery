@@ -8,6 +8,7 @@ import com.huskydreaming.medieval.brewery.data.Ingredient;
 import com.huskydreaming.medieval.brewery.data.Item;
 import com.huskydreaming.medieval.brewery.data.Recipe;
 import com.huskydreaming.medieval.brewery.enumerations.Message;
+import com.huskydreaming.medieval.brewery.handlers.interfaces.ConfigHandler;
 import com.huskydreaming.medieval.brewery.repositories.interfaces.RecipeRepository;
 import com.huskydreaming.medieval.brewery.utils.MaterialUtil;
 import com.huskydreaming.medieval.brewery.utils.TimeUtil;
@@ -20,10 +21,12 @@ import org.bukkit.inventory.meta.BookMeta;
 @CommandAnnotation(label = "recipe")
 public class RecipeCommand implements PlayerCommandProvider {
 
+    private final ConfigHandler configHandler;
     private final RecipeRepository recipeRepository;
 
     public RecipeCommand(HuskyPlugin plugin) {
         this.recipeRepository = plugin.provide(RecipeRepository.class);
+        this.configHandler = plugin.provide(ConfigHandler.class);
     }
 
     @Override
@@ -31,6 +34,7 @@ public class RecipeCommand implements PlayerCommandProvider {
         ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) book.getItemMeta();
         if (meta == null) return;
+
         meta.setTitle("Recipe Book");
         meta.setAuthor("Brewery Master");
 
@@ -62,9 +66,9 @@ public class RecipeCommand implements PlayerCommandProvider {
 
             pageContent.append(ChatColor.BLACK).append("Effects:\n").append(ChatColor.DARK_GRAY);
             for (Effect effect : recipe.getEffects()) {
-                String durationTime = TimeUtil.format(effect.getDuration());
-                String effectName = effect.getType().toLowerCase();
-                int level = effect.getAmplifier();
+                String durationTime = TimeUtil.format(effect.duration());
+                String effectName = effect.type().toLowerCase();
+                int level = effect.amplifier();
                 pageContent.append("- ").append(effectName).append(" ").append(durationTime).append(", Lvl ").append(level).append("\n");
             }
 
@@ -73,7 +77,11 @@ public class RecipeCommand implements PlayerCommandProvider {
 
         book.setItemMeta(meta);
 
-        player.getInventory().addItem(book);
-        player.sendMessage(Message.GENERAL_RECIPE_BOOK.prefix());
+        if(configHandler.isReceiveBook()) {
+            player.getInventory().addItem(book);
+            player.sendMessage(Message.GENERAL_RECIPE_BOOK.prefix());
+        } else {
+            player.openBook(book);
+        }
     }
 }

@@ -10,5 +10,7 @@ public interface ConfigHandler extends Handler {
 
     boolean hasNotifyPlayer();
 
+    boolean isReceiveBook();
+
     String getLanguage();
 }

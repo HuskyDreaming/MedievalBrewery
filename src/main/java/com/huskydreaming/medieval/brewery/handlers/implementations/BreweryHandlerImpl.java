@@ -37,7 +37,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
 
         NamespacedKey namespacedKey = MedievalBreweryPlugin.getNamespacedKey();
 
-        for(Brewery brewery : breweryRepository.getBreweries()) {
+        for (Brewery brewery : breweryRepository.getBreweries()) {
             Block block = brewery.getPosition().toBlock();
             if (block == null) continue;
 
@@ -49,7 +49,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
                     String recipeName = brewery.getRecipeName();
                     Recipe recipe = recipeRepository.getRecipe(recipeName);
 
-                    if(recipe != null) {
+                    if (recipe != null) {
                         int remaining = brewery.getRemaining();
                         int uses = recipe.getUses();
 
@@ -61,7 +61,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
                     String recipeName = brewery.getRecipeName();
                     Recipe recipe = recipeRepository.getRecipe(recipeName);
 
-                    if(recipe != null) {
+                    if (recipe != null) {
                         int waterLevel = brewery.getWaterLevel();
                         int water = recipe.getWater();
 
@@ -76,7 +76,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
             }
 
             Hologram hologram;
-            if(header != null && footer != null) {
+            if (header != null && footer != null) {
                 hologram = Hologram.create(namespacedKey, block, header, footer);
             } else {
                 hologram = Hologram.create(namespacedKey, block);
@@ -90,9 +90,9 @@ public class BreweryHandlerImpl implements BreweryHandler {
 
     @Override
     public void finalize(HuskyPlugin plugin) {
-        for(Brewery brewery : breweryRepository.getBreweries()) {
+        for (Brewery brewery : breweryRepository.getBreweries()) {
             Hologram hologram = brewery.getHologram();
-            if(hologram != null) hologram.delete();
+            if (hologram != null) hologram.delete();
         }
     }
 
@@ -101,25 +101,25 @@ public class BreweryHandlerImpl implements BreweryHandler {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for(Brewery brewery : breweryRepository.getBreweries()) {
-                    if(brewery.getStatus() != BreweryStatus.BREWING) continue;
-                    if(brewery.getTimeStamp() <= 0) continue;
+                for (Brewery brewery : breweryRepository.getBreweries()) {
+                    if (brewery.getStatus() != BreweryStatus.BREWING) continue;
+                    if (brewery.getTimeStamp() <= 0) continue;
 
                     Hologram hologram = brewery.getHologram();
-                    if(hologram == null) continue;
+                    if (hologram == null) continue;
 
                     String recipeName = brewery.getRecipeName();
-                    if(recipeName == null) continue;
+                    if (recipeName == null) continue;
 
                     Recipe recipe = recipeRepository.getRecipe(recipeName);
-                    if(recipe == null) continue;
+                    if (recipe == null) continue;
 
                     long timeDifference = TimeUtil.timeDifference(brewery);
 
                     String header;
                     String footer;
 
-                    if((timeDifference / 1000L) < 1) {
+                    if ((timeDifference / 1000L) < 1) {
                         int remaining = brewery.getRemaining();
                         int uses = recipe.getUses();
 
@@ -129,14 +129,14 @@ public class BreweryHandlerImpl implements BreweryHandler {
                         brewery.setStatus(BreweryStatus.READY);
                         brewery.setTimeStamp(0L);
 
-                        if(configHandler.hasQualities()) {
+                        if (configHandler.hasQualities()) {
                             String quality = qualityRepository.getQuality();
                             if (quality != null) brewery.setQualityName(quality);
                         }
 
-                        if(configHandler.hasNotifyPlayer()) {
+                        if (configHandler.hasNotifyPlayer()) {
                             Player player = Bukkit.getPlayer(brewery.getOwner());
-                            if(player != null) player.sendMessage(Message.GENERAL_NOTIFY.prefix(recipeName));
+                            if (player != null) player.sendMessage(Message.GENERAL_NOTIFY.prefix(recipeName));
                         }
                     } else {
                         String timeString = TimeUtil.convertTimeStamp(timeDifference);
@@ -185,7 +185,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
 
     @Override
     public void updateWater(Brewery brewery, ItemStack itemStack) {
-        if(itemStack == null || itemStack.getType() != Material.WATER_BUCKET) return;
+        if (itemStack == null || itemStack.getType() != Material.WATER_BUCKET) return;
         String recipeName = brewery.getRecipeName();
         Recipe recipe = recipeRepository.getRecipe(recipeName);
 
@@ -194,7 +194,7 @@ public class BreweryHandlerImpl implements BreweryHandler {
         brewery.addWaterLevel();
         int water = recipe.getWater();
         int waterLevel = brewery.getWaterLevel();
-        if(waterLevel >= water) {
+        if (waterLevel >= water) {
             brewery.setRemaining(recipe.getUses());
             brewery.setStatus(BreweryStatus.BREWING);
             brewery.setWaterLevel(0);

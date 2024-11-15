@@ -34,8 +34,8 @@ public class ReloadCommand implements CommandProvider {
         }
 
         localizationHandler.initialize(plugin);
-        qualityRepository.deserialize(plugin);
-        recipeRepository.deserialize(plugin);
+        qualityRepository.postDeserialize(plugin);
+        recipeRepository.postDeserialize(plugin);
 
         plugin.reloadConfig();
         commandSender.sendMessage(Message.GENERAL_RELOAD.prefix());

@@ -10,3 +10,10 @@ notify-player: false
 # Enable qualities
 # When you change this, it will break the already brewed drinks
 qualities: true
+
+# Either receive a book or
+# open the book for player
+receive-book: true
+
+# You can edit this yourself to either have
+# linear progression or exponential when leveling

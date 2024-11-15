@@ -2,7 +2,7 @@ main: com.huskydreaming.medieval.brewery.MedievalBreweryPlugin
 name: MedievalBrewery
 description: A medieval brewery plugin
 api-version: '1.19'
-version: 1.7.1
+version: 1.7.2
 author: HuskyDreaming
 load: POSTWORLD
 
