@@ -1,7 +1,7 @@
 
 # Medieval Brewery
 ![Spigot](https://img.shields.io/badge/Spigot-1.19_--_1.21.1-green.svg)
-![Version](https://img.shields.io/badge/Version-1.6-blue.svg)
+![Version](https://img.shields.io/badge/Version-1.7.2-blue.svg)
 
 Medieval Brewery is a customizable brewing plugin designed for Minecraft servers running on Spigot. It adds an brewing system where players can craft various medieval-inspired drinks, complete with unique ingredients, brewing times, and special effects. Whether you’re creating potent potions like ale, wine, or mead, or experimenting with new recipes, Medieval Brewery offers a rich and engaging experience for players who want to add more depth to their survival or role-playing gameplay.
 
